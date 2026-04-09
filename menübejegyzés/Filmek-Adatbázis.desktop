@@ -1,0 +1,17 @@
+[Desktop Entry]
+Comment[hu_HU]=
+Comment=
+Exec=/home/szaboger/Asztal/szaboger/Filmek-Adatbázis/venv/bin/python3 /home/szaboger/Asztal/szaboger/Filmek-Adatbázis/2.0/movie2.1.py
+GenericName[hu_HU]=
+GenericName=
+Icon=/home/szaboger/Asztal/szaboger/Filmek-Adatbázis/ikon/clapperboard_cinema_icon-icons.com_66131.png
+MimeType=
+Name[hu_HU]=Filmek Adatbázis
+Name=Filmek Adatbázis
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
