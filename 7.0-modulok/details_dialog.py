@@ -16,6 +16,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, Optional, Dict, List
 import re
+import copy
 
 import logging
 
@@ -325,31 +326,7 @@ def _build_parts_lines(movie: Mapping[str, Any]) -> List[str]:
 
 
 
-def _load_cover_pixmap(movie: Mapping[str, Any]) -> Optional[QPixmap]:
-    path = (
-        (movie.get("cover_path") or "")
-        or (movie.get("cover_file") or "")
-        or (movie.get("cover") or "")
-    )
-    path = str(path).strip()
-    if not path:
-        return None
 
-    p = Path(path)
-
-    # fallback: régi ékezetes projektmappa -> új ékezet nélküli
-    if not p.exists():
-        fixed = path.replace("Filmek-Adatbázis", "Filmek-Adatbazis")
-        if fixed != path and Path(fixed).exists():
-            path = fixed
-            p = Path(path)
-
-    pm = QPixmap(path)
-    if pm.isNull():
-        LOGGER.warning("Nem sikerült betölteni a borítóképet: %s", path)
-        return None
-
-    return pm
 
 
 
@@ -710,8 +687,9 @@ class ModernDetailDialog(QDialog):
 
         # Cover
         pm = _load_cover_pixmap(m)
+        self.lbl_cover.setPixmap(QPixmap())
+
         if pm is None:
-            self.lbl_cover.setPixmap(QPixmap())
             self.lbl_cover.setText("Nincs borítókép")
         else:
             self.lbl_cover.setText("")
@@ -720,7 +698,7 @@ class ModernDetailDialog(QDialog):
                 Qt.KeepAspectRatio,
                 Qt.SmoothTransformation,
             )
-        self.lbl_cover.setPixmap(scaled)
+            self.lbl_cover.setPixmap(scaled)
 
 
 
@@ -883,23 +861,30 @@ class ModernDetailDialog(QDialog):
 # ---------------------------------------------------------------------
 
 def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") -> None:
-    # A valódi főablak kinyerése (MovieCard -> MainWindow)
     real_parent = parent.window() if hasattr(parent, "window") else parent
 
-    _enrich_movie_with_parts(real_parent, movie)
-    if "_parts_rows" in movie:
-        print("[DETAILS enrich]", movie.get("title"),
-            "rows=", len(movie.get("_parts_rows", [])),
-            "total=", movie.get("_parts_total_gb"))
+    movie_copy = dict(movie)
+    _enrich_movie_with_parts(real_parent, movie_copy)
+
+    if "_parts_rows" in movie_copy:
+        print(
+            "[DETAILS enrich]",
+            movie_copy.get("title"),
+            "rows=",
+            len(movie_copy.get("_parts_rows", [])),
+            "total=",
+            movie_copy.get("_parts_total_gb"),
+        )
     else:
-        print("[DETAILS enrich] skipped", movie.get("title"),
-            "type=", (movie.get("type") or "").strip())
+        print(
+            "[DETAILS enrich] skipped",
+            movie_copy.get("title"),
+            "type=",
+            (movie_copy.get("type") or "").strip(),
+        )
 
+    dlg = ModernDetailDialog(movie_copy, parent=real_parent)
 
-    # 1) Dialog kiválasztás – jelenleg csak modern van
-    dlg = ModernDetailDialog(movie, parent=real_parent)
-
-    # 2) EDIT / NOTES bekötés a MainWindow-ra (ha létezik)
     edit_cb = getattr(real_parent, "on_edit_item_from_list", None)
     if callable(edit_cb):
         dlg.edit_requested.connect(edit_cb)
@@ -908,10 +893,4 @@ def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") 
     if callable(notes_cb):
         dlg.notes_save_requested.connect(notes_cb)
 
-    # 3) Megnyitás modálisan
     dlg.exec()
-
-
-
-# Kompatibilitás: ha valahol véletlenül DetailDialog néven hívod
-DetailDialog = ModernDetailDialog

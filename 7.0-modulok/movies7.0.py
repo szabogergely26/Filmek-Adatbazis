@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8
+
 
 
 # ----------------#
@@ -12,28 +12,21 @@
 
 from __future__ import annotations
 
-import os
-import fcntl
-import sqlite3
-import sys
-import socket
-
-from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
-from PySide6.QtWidgets import QApplication, QDialog
-
-#from settings_dialog import SettingsDialog
-
-from config import APP_NAME, APP_VERSION, APP_ORG, DB_PATH,ICON_PATH, LOGGER, APP_DATA_DIR
-from db import DatabaseManager
-from main_window import MainWindow
-from theme_utils import apply_theme_from_settings
-
 import logging
 import logging.handlers
+import socket
+import sqlite3
+import sys
 from pathlib import Path
 
 from PySide6.QtCore import QSettings
+from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
+from PySide6.QtWidgets import QApplication
 
+from config import APP_DATA_DIR, APP_NAME, APP_ORG, APP_VERSION, DB_PATH, ICON_PATH, LOGGER
+from db import DatabaseManager
+from main_window import MainWindow
+from theme_utils import apply_theme_from_settings
 
 # -- Importok vége -----
 
