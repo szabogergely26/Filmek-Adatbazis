@@ -43,7 +43,7 @@ from configparser import NoOptionError, NoSectionError
 # ---------------- Alap adatok ----------------
 
 APP_NAME = "FilmekAdatbazis"             # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
-APP_DISPLAY_NAME = "Filmek Adatbázis DEV"
+APP_DISPLAY_NAME = "Filmek Adatbázis Fejlesztői"
 APP_VERSION = "7.0"
 APP_ORG = "Filmekadatbazis"
 
