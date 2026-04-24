@@ -44,7 +44,7 @@ from configparser import NoOptionError, NoSectionError
 
 APP_NAME = "FilmekAdatbazis"             # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
 APP_DISPLAY_NAME = "Filmek Adatbázis Fejlesztői"
-APP_VERSION = "7.0"
+APP_VERSION = "-"
 APP_ORG = "Filmekadatbazis"
 
 

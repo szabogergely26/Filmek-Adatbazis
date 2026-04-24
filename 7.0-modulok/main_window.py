@@ -1268,8 +1268,8 @@ class MainWindow(QMainWindow):
             f"""
             <h2>{APP_NAME}</h2>
             <p>Helyi, offline Python/PySide6 alkalmazás.</p>
-            <p>Fejlesztői verzió...</p>
-            <p>Verzió: {APP_VERSION} (kártyanézet, CRUD, import/export, autó keresés)</p>
+            <p>Fejlesztői verzió</p>
+            <p>(kártyanézet, CRUD, import/export, autó keresés)</p>
             <p>Adatbázis: <code>{DB_PATH}</code></p>
             """
         )
