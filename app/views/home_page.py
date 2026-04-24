@@ -16,6 +16,33 @@ from PySide6.QtWidgets import (
     QFrame
 )
 
+# ---- Helper függvények -----
+
+def _group_latest_by_title(rows: list[dict], limit: int = 10) -> list[dict]:
+    grouped: dict[str, dict] = {}
+
+    for row in reversed(rows):
+        title = (row.get("title") or "").strip()
+        if not title:
+            continue
+
+        if title not in grouped:
+            grouped[title] = dict(row)
+            continue
+
+        current = grouped[title]
+        current_cover = current.get("cover_path") or current.get("cover_file") or current.get("cover")
+        row_cover = row.get("cover_path") or row.get("cover_file") or row.get("cover")
+
+        if not current_cover and row_cover:
+            grouped[title] = dict(row)
+
+    return list(grouped.values())[:limit]
+
+
+
+
+
 
 
 class HomePage(QWidget):
@@ -44,16 +71,7 @@ class HomePage(QWidget):
 
         self.reload()
 
-    def reload(self) -> None:
-        self._clear_content()
-
-        rows = self.dbm.fetch_all()
-        latest = rows[-10:] if rows else []
-        latest = list(reversed(latest))
-
-        self._add_section("Legutóbb hozzáadott", latest)
-
-        self.content.addStretch()
+    
 
     def _add_section(self, title: str, rows: list[dict]) -> None:
         section_title = QLabel(title)
@@ -161,3 +179,19 @@ class HomePage(QWidget):
                 return True
 
         return super().eventFilter(obj, event)
+
+
+
+
+
+    def reload(self) -> None:
+        self._clear_content()
+
+        rows = self.dbm.fetch_all()
+        latest = _group_latest_by_title(rows, limit=10)
+
+
+        self._add_section("Legutóbb hozzáadott", latest)
+
+        self.content.addStretch()
+        self.container.adjustSize()
