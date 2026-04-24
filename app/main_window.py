@@ -65,6 +65,9 @@ from themes.theme_utils import apply_theme_from_settings
 from dialogs.details_dialog import ModernDetailDialog
 
 
+from views.home_page import HomePage
+
+
 # --------------------------------------------------------------------------------------------------
 
 CHRISTMAS_ALIASES = {
@@ -193,19 +196,10 @@ class MainWindow(QMainWindow):
         root.addWidget(self.stack)
 
         # Kezdőoldal (HTML)
-        self.home = QTextBrowser()
-        self.home.setHtml(
-            """
-            <h1>Filmek Adatbázis</h1>
-            <p>Üdvözöl a helyi, offline film/sorozat katalógus. Bal oldalt válaszd az „Adatbázis” lapot.</p>
-            <ul>
-              <li><b>Fájl → Új</b>: új film/sorozat (vagy rész/évad) felvétele</li>
-              <li><b>Adatok → Importálás/Exportálás</b>: teljes adatbázis mentése/helyreállítása</li>
-              <li><b>Súgó</b>: témakörök, névjegy, változásnapló</li>
-            </ul>
-            """
-        )
+        self.home = HomePage(self.dbm, parent=self)
         self.stack.addWidget(self.home)
+
+
 
         # --- Adatbázis oldal ---
         self.db_page = QWidget()
@@ -751,7 +745,7 @@ class MainWindow(QMainWindow):
                 sorted([k for k in row.keys() if "cover" in k.lower()]),
             )
 
-        from details_dialog import open_details_dialog
+        from dialogs.details_dialog import open_details_dialog
         open_details_dialog(self, row)
 
 

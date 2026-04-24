@@ -470,3 +470,63 @@ QTableWidget#dbListTable::item:selected:hover {
     border: 2px solid rgba(255, 255, 255, 85);
     border-radius: 6px;
 }
+
+
+
+
+
+
+
+
+/* ========== Kezdőoldal ========== */
+
+QLabel#sectionTitle {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+QFrame#homeMiniCard {
+    background: rgba(255, 255, 255, 5);
+    border: 1px solid rgba(255, 255, 255, 18);
+    border-radius: 15px;
+    min-width: 160px;
+    max-width: 190px;
+    min-height: 110px;
+    padding: 8px;
+}
+
+QFrame#homeMiniCard:hover {
+    background: qlineargradient(
+        x1:0, y1:0, x2:0, y2:1,
+        stop:0 rgba(255, 255, 255, 34),
+        stop:0.15 rgba(255, 255, 255, 22),
+        stop:1 rgba(255, 255, 255, 8)
+    );
+    border: 2px solid rgba(255, 255, 255, 70);
+}
+
+QFrame#homeMiniCard QLabel {
+    background: transparent;
+    border: none;
+}
+
+QLabel#homeMiniCardTitle {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+QLabel#homeMiniCardMeta {
+    color: #b8c0cc;
+    font-size: 12px;
+}
+
+
+QLabel#homeMiniCardCover {
+    background: transparent;
+    border: none;
+    color: #777777;
+}
