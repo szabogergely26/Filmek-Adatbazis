@@ -55,14 +55,14 @@ from config import (
 )
 
 from db import DatabaseManager
-from wizard import AddItemWizard
-from edit_dialog import EditDialog
-from movie_card import MovieCard
-from log_window import LogWindow
-from list_view import ListViewWidget
-from settings_dialog import SettingsDialog
-from theme_utils import apply_theme_from_settings
-from details_dialog import ModernDetailDialog
+from wizard.wizard import AddItemWizard
+from dialogs.edit_dialog import EditDialog
+from views.movie_card import MovieCard
+from dialogs.log_window import LogWindow
+from views.list_view import ListViewWidget
+from dialogs.settings_dialog import SettingsDialog
+from themes.theme_utils import apply_theme_from_settings
+from dialogs.details_dialog import ModernDetailDialog
 
 
 # --------------------------------------------------------------------------------------------------
