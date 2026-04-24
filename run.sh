@@ -2,9 +2,13 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-APP_DIR="$SCRIPT_DIR/7.0-modulok"
+APP_DIR="$SCRIPT_DIR/app"
 VENV_PY="$SCRIPT_DIR/venv/bin/python"
 
-cd "$APP_DIR"
+if [[ ! -x "$VENV_PY" ]]; then
+    echo "Hiba: nem található a venv Python: $VENV_PY"
+    exit 1
+fi
 
+cd "$APP_DIR"
 exec "$VENV_PY" ./movies7.0.py
