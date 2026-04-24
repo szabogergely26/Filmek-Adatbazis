@@ -3,13 +3,15 @@
 # ---- Importok ------
 
 from pathlib import Path
+
 from PySide6.QtWidgets import (
     QDialog, 
     QVBoxLayout,
     QHBoxLayout,
     QTextEdit, 
     QPushButton, 
-    QSizePolicy
+    QSizePolicy,
+    QMessageBox
 
 )
 
@@ -44,6 +46,13 @@ class LogWindow(QDialog):
         self.refresh_btn.clicked.connect(self.load_log)
         btn_row.addWidget(self.refresh_btn)
 
+
+        self.btn_clear = QPushButton("Napló törlése")
+        self.btn_clear.setObjectName("dangerButton")
+        self.btn_clear.clicked.connect(self.clear_log)
+        btn_row.addWidget(self.btn_clear)
+
+
         self.close_btn = QPushButton("Bezárás")
         self.close_btn.clicked.connect(self.accept)
         btn_row.addWidget(self.close_btn)
@@ -52,6 +61,9 @@ class LogWindow(QDialog):
 
         # első betöltés
         self.load_log()
+
+
+
 
     def load_log(self):
         """Log tartalmának betöltése a QTextEdit-be."""
@@ -63,3 +75,36 @@ class LogWindow(QDialog):
                 self.text.setPlainText(f"A logfájl nem található:\n{self.log_path}")
         except Exception as e:
             self.text.setPlainText(f"Hiba történt a log fájl olvasásakor:\n{e}")
+
+
+
+
+    def clear_log(self) -> None:
+        """A naplófájl tartalmának törlése, majd a nézet frissítése."""
+
+        answer = QMessageBox.question(
+            self,
+            "Napló törlése",
+            "Biztosan törölni szeretnéd a napló tartalmát?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        try:
+            log_path = Path(self.log_path)
+
+            if log_path.exists():
+                log_path.write_text("", encoding="utf-8")
+
+            self.text.setPlainText("A napló törölve lett.")
+            self.load_log
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                "Hiba",
+                f"Nem sikerült törölni a naplót:\n\n{exc}",
+            )
