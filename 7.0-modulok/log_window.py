@@ -100,7 +100,7 @@ class LogWindow(QDialog):
                 log_path.write_text("", encoding="utf-8")
 
             self.text.setPlainText("A napló törölve lett.")
-            self.load_log
+
 
         except Exception as exc:
             QMessageBox.critical(
