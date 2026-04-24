@@ -50,10 +50,10 @@ from config import (
     NO_COVER_TEXT,
     SHOW_COVER_ON_CARD,
 )
-from details_dialog import open_details_dialog
-from edit_dialog import EditDialog
-from icons import PROVIDER_EMOJI, norm, provider_pixmap
-from utils import (
+from dialogs.details_dialog import open_details_dialog
+from dialogs.edit_dialog import EditDialog
+from themes.icons import PROVIDER_EMOJI, norm, provider_pixmap
+from utils.utils import (
     as_int,
     format_tracks,
     join_unique,

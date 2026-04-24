@@ -24,9 +24,9 @@ from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
 from PySide6.QtWidgets import QApplication
 
 from config import APP_DATA_DIR, APP_NAME, APP_ORG, APP_VERSION, DB_PATH, ICON_PATH, LOGGER
-from db import DatabaseManager
+from db.database_manager import DatabaseManager
 from main_window import MainWindow
-from theme_utils import apply_theme_from_settings
+from themes.theme_utils import apply_theme_from_settings
 
 # -- Importok vége -----
 

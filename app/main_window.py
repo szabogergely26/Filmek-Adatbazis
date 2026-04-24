@@ -55,14 +55,14 @@ from config import (
 )
 
 from db import DatabaseManager
-from wizard import AddItemWizard
-from edit_dialog import EditDialog
-from movie_card import MovieCard
-from log_window import LogWindow
-from list_view import ListViewWidget
-from settings_dialog import SettingsDialog
-from theme_utils import apply_theme_from_settings
-from details_dialog import ModernDetailDialog
+from wizard.wizard import AddItemWizard
+from dialogs.edit_dialog import EditDialog
+from views.movie_card import MovieCard
+from dialogs.log_window import LogWindow
+from views.list_view import ListViewWidget
+from dialogs.settings_dialog import SettingsDialog
+from themes.theme_utils import apply_theme_from_settings
+from dialogs.details_dialog import ModernDetailDialog
 
 
 # --------------------------------------------------------------------------------------------------
@@ -1268,8 +1268,8 @@ class MainWindow(QMainWindow):
             f"""
             <h2>{APP_NAME}</h2>
             <p>Helyi, offline Python/PySide6 alkalmazás.</p>
-            <p>Fejlesztői verzió...</p>
-            <p>Verzió: {APP_VERSION} (kártyanézet, CRUD, import/export, autó keresés)</p>
+            <p>Fejlesztői verzió</p>
+            <p>(kártyanézet, CRUD, import/export, autó keresés)</p>
             <p>Adatbázis: <code>{DB_PATH}</code></p>
             """
         )

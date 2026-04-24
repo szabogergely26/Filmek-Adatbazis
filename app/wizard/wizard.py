@@ -28,7 +28,7 @@ from enum import IntEnum
 from typing import Any
 
 from config import LOGGER
-from utils import parse_first_int
+from utils.utils import parse_first_int
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap

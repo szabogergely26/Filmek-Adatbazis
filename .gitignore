@@ -2,9 +2,8 @@
 # Python cache
 # -------------------------
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
 # -------------------------
 # Virtualenv
@@ -22,6 +21,7 @@ appdata/
 # Logs
 # -------------------------
 *.log
+logs/
 
 # -------------------------
 # Databases / backups
@@ -32,9 +32,19 @@ appdata/
 *.bak
 
 # -------------------------
+# Build / packaging
+# -------------------------
+build/
+dist/
+*.egg-info/
+deb_build/
+*.deb
+
+# -------------------------
 # Archives
 # -------------------------
 *.zip
+*.tar.gz
 
 # -------------------------
 # VSCode
@@ -51,3 +61,19 @@ Thumbs.db
 # Local user settings
 # -------------------------
 settings.json
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
