@@ -1,4 +1,7 @@
-# log_window.py
+# #  /apps/dialogs/log_window.py
+# --------------------------------
+
+
 
 # ---- Importok ------
 

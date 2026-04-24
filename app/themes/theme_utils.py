@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# #  /apps/themes/theme_utils.py
+# --------------------------------
+
 # -*- coding: utf-8 -*-
 
 """

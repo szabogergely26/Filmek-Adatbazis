@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# /app/dialogs/details_dialog.py
+# ---------------------------------
 # -*- coding: utf-8 -*-
 
 """

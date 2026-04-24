@@ -1,5 +1,5 @@
-# icons.py
-
+# /app/themes/icons.py
+# ---------------------
 """
 Ikonok beállításai
 """

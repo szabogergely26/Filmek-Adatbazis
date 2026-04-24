@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# /apps/wizard.py
+# --------------------
+
 # -*- coding: utf-8 -*-
 
 """

@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#  /apps/views/movie_card.py
+# ---------------------------
 
 """
 Kártya widget egy címhez (film/sorozat):

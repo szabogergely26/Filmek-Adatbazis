@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# /apps/dialogs/edit_dialog.py
+# ------------------------------
+
 # -*- coding: utf-8 -*-
 
 
@@ -35,7 +37,7 @@ from db import DatabaseManager
 
 
 
-#  ----- Segédfüggvények: 
+#  ----- Segédfüggvények:
 
 def parse_first_int(text: str) -> Optional[int]:
     """

@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+# #  /app/tools/diag_movies.py
+# -------------------------------
+
 # -*- coding: utf-8 -*-
 
 import sqlite3, re, sys, os

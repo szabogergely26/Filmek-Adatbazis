@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# /app/tools/migrate_storage.py
+# --------------------------------
+
 from __future__ import annotations
 
 import shutil

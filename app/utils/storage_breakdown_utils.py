@@ -1,10 +1,11 @@
+# /app/utils/storage_breakdown_utils.py
+# ---------------------------------------
+
 from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
-
+from typing import Any
 
 # ---------------------------
 # Parsing / formatting helpers
@@ -13,7 +14,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 _RANGE_RE = re.compile(r"^\s*(\d+)\s*-\s*(\d+)\s*$")
 
 
-def parse_size_text_to_gb(size_text: Optional[str]) -> Optional[float]:
+def parse_size_text_to_gb(size_text: str | None) -> float | None:
     """
     "23 GB", "23,5 GB", "1024 MB", "1.2 TB" -> GB float
     Ha nem felismerhető, None.
@@ -36,11 +37,11 @@ def parse_size_text_to_gb(size_text: Optional[str]) -> Optional[float]:
     return None
 
 
-def _norm_loc(loc: Optional[str]) -> str:
+def _norm_loc(loc: str | None) -> str:
     return (loc or "").strip()
 
 
-def _to_float(x: Any) -> Optional[float]:
+def _to_float(x: Any) -> float | None:
     try:
         if x is None:
             return None
@@ -49,7 +50,7 @@ def _to_float(x: Any) -> Optional[float]:
         return None
 
 
-def _parse_season_range(text: str) -> Optional[Tuple[int, int]]:
+def _parse_season_range(text: str) -> tuple[int, int] | None:
     m = _RANGE_RE.match(text)
     if not m:
         return None
@@ -60,7 +61,7 @@ def _parse_season_range(text: str) -> Optional[Tuple[int, int]]:
     return a, b
 
 
-def load_storage_breakdown(raw: Optional[str]) -> List[Dict[str, Any]]:
+def load_storage_breakdown(raw: str | None) -> list[dict[str, Any]]:
     """
     storage_breakdown TEXT (JSON) -> list of dict
     Hibás/üres esetben [].
@@ -77,14 +78,14 @@ def load_storage_breakdown(raw: Optional[str]) -> List[Dict[str, Any]]:
     return []
 
 
-def dump_storage_breakdown(items: List[Dict[str, Any]]) -> str:
+def dump_storage_breakdown(items: list[dict[str, Any]]) -> str:
     """
     list of dict -> JSON string (compact, stable)
     """
     return json.dumps(items, ensure_ascii=False, separators=(",", ":"))
 
 
-def calc_total_size_gb(items: List[Dict[str, Any]]) -> float:
+def calc_total_size_gb(items: list[dict[str, Any]]) -> float:
     """
     Összméret számítása breakdown-ból.
     Csak a size_gb mezőt nézzük (float-ra konvertálva), negatívat ignoráljuk.
@@ -103,9 +104,8 @@ def calc_total_size_gb(items: List[Dict[str, Any]]) -> float:
 # ---------------------------
 
 def normalize_breakdown_for_movie(
-    parts_count: int,
-    items: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    parts_count: int, items: list[dict[str, Any]],) -> list[dict[str, Any]]:
+
     """
     Film: part-alapú elemeket engedünk: {"part": N, "loc": "...", "size_gb": ...}
     - part 1..parts_count
@@ -113,7 +113,7 @@ def normalize_breakdown_for_movie(
     - loc normalizálás, size_gb float
     """
     parts_count = max(1, int(parts_count or 1))
-    by_part: Dict[int, Dict[str, Any]] = {}
+    by_part: dict[int, dict[str, Any]] = {}
 
     for it in items:
         p = it.get("part")
@@ -138,8 +138,8 @@ def normalize_breakdown_for_movie(
 
 
 def normalize_breakdown_for_series(
-    items: List[Dict[str, Any]],
-) -> List[Dict[str, Any]]:
+    items: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
     """
     Sorozat: season vagy seasons (tartomány) alapú elemek:
       {"season": N, "loc": "...", "size_gb": ...}
@@ -148,12 +148,12 @@ def normalize_breakdown_for_series(
     Nem kényszerítjük, hogy minden évad lefedett legyen, és az átfedést sem tiltjuk
     (de később simán lehet warningot adni rá).
     """
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
 
     for it in items:
         loc = _norm_loc(it.get("loc"))
         size_gb = _to_float(it.get("size_gb"))
-        base: Dict[str, Any] = {"loc": loc}
+        base: dict[str, Any] = {"loc": loc}
         if size_gb is not None:
             base["size_gb"] = round(size_gb, 2)
 
@@ -178,7 +178,7 @@ def normalize_breakdown_for_series(
             continue
 
     # rendezés: season-ek előre, utána tartományok kezdő szerint
-    def _key(x: Dict[str, Any]) -> Tuple[int, int]:
+    def _key(x: dict[str, Any]) -> tuple[int, int]:
         if "season" in x:
             return (0, int(x["season"]))
         if "seasons" in x:
@@ -194,11 +194,11 @@ def normalize_breakdown_for_series(
 # Display formatting
 # ---------------------------
 
-def format_breakdown_lines_for_movie(items: List[Dict[str, Any]]) -> List[str]:
+def format_breakdown_lines_for_movie(items: list[dict[str, Any]]) -> list[str]:
     """
     ["1. rész — 23.0 GB — 4_1 TB", ...]
     """
-    lines: List[str] = []
+    lines: list[str] = []
     for it in items:
         p = it.get("part")
         loc = (it.get("loc") or "").strip()
@@ -209,11 +209,11 @@ def format_breakdown_lines_for_movie(items: List[Dict[str, Any]]) -> List[str]:
     return lines
 
 
-def format_breakdown_lines_for_series(items: List[Dict[str, Any]]) -> List[str]:
+def format_breakdown_lines_for_series(items: list[dict[str, Any]]) -> list[str]:
     """
-    ["1–3. évad — 180 GB — 2_4 TB", "4. évad — 55 GB — SSD", ...]
+    ["1-3. évad — 180 GB — 2_4 TB", "4. évad — 55 GB — SSD", ...]
     """
-    lines: List[str] = []
+    lines: list[str] = []
     for it in items:
         loc = (it.get("loc") or "").strip()
         size_gb = _to_float(it.get("size_gb"))
