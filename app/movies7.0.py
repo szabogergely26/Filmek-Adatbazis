@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 
-
-
-# ----------------#
-# Verzió: 7.0     #
-#                 #
-# Moduláris main  #
-# ----------------#
-
 # ------ Importok --------
 
+# Type hint-ek késleltetett kiértékelése
+# Segít csökkenteni a felesleges körkörös importokat.
 from __future__ import annotations
 
+# Standard library:
 import logging
 import logging.handlers
 import socket
@@ -19,13 +14,17 @@ import sqlite3
 import sys
 from pathlib import Path
 
+# App Core:
+from config import APP_DATA_DIR, APP_NAME, APP_ORG, APP_VERSION, DB_PATH, ICON_PATH, LOGGER
+from db.database_manager import DatabaseManager
+from main_window import MainWindow
+
+# Qt / PySide6
 from PySide6.QtCore import QSettings
 from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
 from PySide6.QtWidgets import QApplication
 
-from config import APP_DATA_DIR, APP_NAME, APP_ORG, APP_VERSION, DB_PATH, ICON_PATH, LOGGER
-from db.database_manager import DatabaseManager
-from main_window import MainWindow
+# Themes:
 from themes.theme_utils import apply_theme_from_settings
 
 # -- Importok vége -----
