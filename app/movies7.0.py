@@ -55,9 +55,9 @@ def load_stylesheet() -> str:
     Ha nincs vagy nem olvasható, üres stringet ad vissza.
     """
     css_path = Path(__file__).resolve().parent / "style.css"
+
     try:
-        with open(css_path, "r", encoding="utf-8") as f:
-            return f.read()
+        return css_path.read_text(encoding="utf-8")
     except OSError:
         # Nem állítjuk meg az appot, csak nem lesz stylesheet
         return ""
@@ -252,6 +252,9 @@ def main() -> int:
 
     # app név
     app.setApplicationName(APP_NAME)
+
+    # Alap fallback téma
+    setup_dark_theme(app)
 
    # Téma alkalmazása a beállítások alapján
     apply_theme_from_settings(app)
