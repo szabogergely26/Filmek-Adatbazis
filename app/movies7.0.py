@@ -1,9 +1,6 @@
 # /aps/movies7.0.py - később main.py
 # --------------------------------------
 
-
-# ------ Importok --------
-
 from __future__ import annotations
 
 import logging
@@ -13,13 +10,12 @@ import sqlite3
 import sys
 from pathlib import Path
 
-from PySide6.QtCore import QSettings
-from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
-from PySide6.QtWidgets import QApplication
-
 from config import APP_DATA_DIR, APP_NAME, APP_ORG, APP_VERSION, DB_PATH, ICON_PATH, LOGGER
 from db.database_manager import DatabaseManager
 from main_window import MainWindow
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QColor, QGuiApplication, QIcon, QPalette
+from PySide6.QtWidgets import QApplication
 from themes.theme_utils import apply_theme_from_settings
 
 # -- Importok vége -----
