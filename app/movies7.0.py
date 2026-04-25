@@ -1,4 +1,4 @@
-# /aps/movies7.0.py - később main.py
+# /app/movies7.0.py - később main.py
 # --------------------------------------
 
 from __future__ import annotations
