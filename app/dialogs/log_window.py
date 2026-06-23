@@ -5,16 +5,14 @@
 from pathlib import Path
 
 from PySide6.QtWidgets import (
-    QDialog, 
-    QVBoxLayout,
+    QDialog,
     QHBoxLayout,
-    QTextEdit, 
-    QPushButton, 
+    QMessageBox,
+    QPushButton,
     QSizePolicy,
-    QMessageBox
-
+    QTextEdit,
+    QVBoxLayout,
 )
-
 
 # ------ Importok vége -------
 

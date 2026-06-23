@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Közös segédfüggvények a Filmek Adatbázis apphoz.
@@ -14,13 +13,12 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
-
+from typing import Any
 
 # ---------------- Méret (GB) segédek ----------------
 
 
-def parse_size_to_gb(size_str: Any) -> Optional[float]:
+def parse_size_to_gb(size_str: Any) -> float | None:
     """'12.3 GB' -> 12.3 (float), hibás/üres esetén None."""
     if not size_str:
         return None
@@ -33,14 +31,14 @@ def parse_size_to_gb(size_str: Any) -> Optional[float]:
     return None
 
 
-def pretty_size(total_gb: Optional[float]) -> str:
+def pretty_size(total_gb: float | None) -> str:
     """GB értékből szépen formázott szöveg."""
     return "" if total_gb is None else f"{total_gb:.1f} GB"
 
 
-def sum_sizes_gb(items: List[Dict[str, Any]]) -> Optional[float]:
+def sum_sizes_gb(items: list[dict[str, Any]]) -> float | None:
     """Több elem 'size' mezőjét összegzi GB-ban (ha lehet)."""
-    vals: List[float] = []
+    vals: list[float] = []
     for it in items:
         g = parse_size_to_gb(it.get("size") or "")
         if g is not None:
@@ -51,9 +49,9 @@ def sum_sizes_gb(items: List[Dict[str, Any]]) -> Optional[float]:
 # ---------------- Általános listakezelő segédek ----------------
 
 
-def join_unique(items: List[str]) -> str:
+def join_unique(items: list[str]) -> str:
     """Sorozat/film meta mezők összefűzésére – duplikátumok nélkül."""
-    seen: List[str] = []
+    seen: list[str] = []
     for it in items:
         if it and it not in seen:
             seen.append(it)
@@ -70,7 +68,7 @@ def as_int(x: Any, default: int = 0) -> int:
         return default
 
 
-def parse_first_int(txt: Any) -> Optional[int]:
+def parse_first_int(txt: Any) -> int | None:
     """Szövegből az első előforduló számot adja vissza (vagy None)."""
     if not txt:
         return None
@@ -78,7 +76,7 @@ def parse_first_int(txt: Any) -> Optional[int]:
     return int(m.group(0)) if m else None
 
 
-def expand_parts(text: str) -> List[int]:
+def expand_parts(text: str) -> list[int]:
     """
     '1-3,5, 7-8' -> [1, 2, 3, 5, 7, 8]
     '4'           -> [4]
@@ -133,7 +131,7 @@ LANG_MAP = {
 }
 
 
-def format_tracks(raw: Optional[str]) -> str:
+def format_tracks(raw: str | None) -> str:
     """
     Hangsáv/felirat mezők emberbarát formázása.
     Pl. 'hu 5.1; en 2.0' -> 'magyar 5.1, angol 2.0'
@@ -144,7 +142,7 @@ def format_tracks(raw: Optional[str]) -> str:
     for sep in [";", "/", "|"]:
         txt = txt.replace(sep, ",")
     parts = [p.strip() for p in txt.split(",") if p.strip()]
-    out: List[str] = []
+    out: list[str] = []
     for p in parts:
         tokens = p.split()
         if not tokens:
@@ -155,7 +153,7 @@ def format_tracks(raw: Optional[str]) -> str:
             out.append(" ".join(tokens))
         else:
             out.append(p)
-    seen: List[str] = []
+    seen: list[str] = []
     for it in out:
         if it not in seen:
             seen.append(it)
@@ -163,9 +161,9 @@ def format_tracks(raw: Optional[str]) -> str:
 
 
 def pretty_genre_pair(
-    general: Optional[str],
-    official: Optional[str],
-    fallback: Optional[str] = None,
+    general: str | None,
+    official: str | None,
+    fallback: str | None = None,
 ) -> str:
     """
     Általános + hivatalos műfaj kombinálása egy szép szövegbe.
@@ -184,15 +182,15 @@ def pretty_genre_pair(
 # ---------------- Sorozat évadok összegzése megjelenítéshez ----------------
 
 
-def _norm_str(s: Optional[str]) -> str:
+def _norm_str(s: str | None) -> str:
     return (s or "").strip()
 
 
-def _norm_str_low(s: Optional[str]) -> str:
+def _norm_str_low(s: str | None) -> str:
     return _norm_str(s).lower()
 
 
-def group_seasons_for_display(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def group_seasons_for_display(items: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """
     Sorozat-részek összegzése megjelenítéshez:
 
@@ -200,7 +198,7 @@ def group_seasons_for_display(items: List[Dict[str, Any]]) -> List[Dict[str, Any
     - part (évad) szerinti folytonos szegmensek (pl. 1–3)
     - méret összeadás (GB), ha lehet; különben az első nem üres méretszöveg
     """
-    buckets: Dict[tuple[str, str], List[Dict[str, Any]]] = defaultdict(list)
+    buckets: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
 
     for it in items:
         storage = _norm_str(it.get("storage_location"))
@@ -212,7 +210,7 @@ def group_seasons_for_display(items: List[Dict[str, Any]]) -> List[Dict[str, Any
         key = (storage_or_provider, fmt_type_low)
         buckets[key].append(it)
 
-    rows: List[Dict[str, Any]] = []
+    rows: list[dict[str, Any]] = []
     for (storage_or_provider, fmt_type_low), arr in buckets.items():
         # parts összegyűjtése
         parts = sorted(
@@ -220,9 +218,9 @@ def group_seasons_for_display(items: List[Dict[str, Any]]) -> List[Dict[str, Any
         )
 
         # folytonos szegmensek képzése
-        segments: List[List[Optional[int]]] = []
+        segments: list[list[int | None]] = []
         if parts:
-            seg: List[int] = [parts[0]]
+            seg: list[int] = [parts[0]]
             for p in parts[1:]:
                 if p == seg[-1] + 1:
                     seg.append(p)
@@ -251,7 +249,7 @@ def group_seasons_for_display(items: List[Dict[str, Any]]) -> List[Dict[str, Any
                 label = f"{seg[0]}–{seg[-1]}. évad"
 
             # méretösszegzés
-            sizes_gb: List[float] = []
+            sizes_gb: list[float] = []
             first_size_text = ""
             for x in arr:
                 p = as_int(x.get("part"), None)

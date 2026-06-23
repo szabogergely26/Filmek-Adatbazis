@@ -4,13 +4,14 @@
 Ikonok beállításai
 """
 
-import logging, unicodedata, re
+import logging
+import re
+import unicodedata
 from pathlib import Path
-from PySide6.QtGui import QIcon, QImageReader, QPixmap
-from PySide6.QtCore import QFileInfo, Qt
 
 from config import PANIC_NO_ICONS
-
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QImageReader, QPixmap
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_PROVIDERS_DIR = BASE_DIR.parent / "ikonok" / "providers"
@@ -64,12 +65,17 @@ def best_provider_key(provider_name: str) -> str:
 def safe_icon(path: str | Path) -> QIcon:
     """Biztonságos ikon betöltés. Soha ne dobjon kivételt."""
     if PANIC_NO_ICONS:
-        logging.debug("ICON OFF: %s", path); return QIcon()
+        logging.debug("ICON OFF: %s", path)
+        return QIcon()
+
     if not path:
-        logging.debug("ICON MISSING PATH"); return QIcon()
+        logging.debug("ICON MISSING PATH")
+        return QIcon()
+
     p = Path(path)
     if not p.exists():
-        logging.debug("ICON NOT FOUND: %s", p); return QIcon()
+        logging.debug("ICON NOT FOUND: %s", p)
+        return QIcon()
 
     reader = QImageReader(str(p))
     reader.setAutoTransform(True)

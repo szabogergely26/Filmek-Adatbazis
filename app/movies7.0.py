@@ -65,7 +65,7 @@ def load_stylesheet() -> str:
     """
     css_path = Path(__file__).resolve().parent / "style.css"
     try:
-        with open(css_path, "r", encoding="utf-8") as f:
+        with open(css_path, encoding="utf-8") as f:
             return f.read()
     except OSError:
         # Nem állítjuk meg az appot, csak nem lesz stylesheet

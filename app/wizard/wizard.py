@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Új bejegyzés varázsló (wizard) oldalai + fő AddItemWizard osztály.
@@ -28,16 +27,16 @@ from enum import IntEnum
 from typing import Any
 
 from config import LOGGER
-from utils.utils import parse_first_int
-
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
-
 from PySide6.QtWidgets import (
+    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QFileDialog,
     QFormLayout,
+    QFrame,
+    QGroupBox,
     QHBoxLayout,
     QLabel,
     QLayout,
@@ -50,14 +49,11 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QTextEdit,
     QVBoxLayout,
+    QWidget,
     QWizard,
     QWizardPage,
-    QWidget,
-    QAbstractSpinBox,
-    QFrame,
-    QGroupBox
 )
-
+from utils.utils import parse_first_int
 
 logger = LOGGER.getChild("Wizard")
 
@@ -202,7 +198,7 @@ class AddItemWizard(QWizard):
         """
 
         item_type = self.property("item_type") or "film"
-        film_mode = self.property("film_mode") or "local"
+        #film_mode = self.property("film_mode") or "local"
 
 
 
@@ -289,17 +285,13 @@ class AddItemWizard(QWizard):
         genres = str(self.field("genre") or "").strip()
 
         # Évadok száma – csak összegzéshez kell, a DB-ben nem "méret" lesz.
-        seasons_count = self.property("series_season_count")
-        try:
-            sc_int = int(seasons_count) if seasons_count is not None else 0
-        except Exception:
-            sc_int = 0
+        #seasons_count = self.property("series_season_count")
 
         # Tárolás, felbontás, formátum (DetailsPage)
         storage = str(self.field("storage") or "").strip()
         cover_path = str(self.property("cover_path") or "").strip()
         resolution = str(self.field("resolution") or "").strip()   # pl. "1080p"
-        format_txt = str(self.field("length") or "").strip()       # sorozatnál: Formátum mező (Pl. "MKV")
+        format_txt = str(self.field("length") or "").strip() # sorozatnál: Formátum mező (Pl. "MKV")
 
         # SOROZATNÁL:
         # - Időtartam (duration) legyen üres
@@ -327,7 +319,7 @@ class AddItemWizard(QWizard):
         }
         return row
 
-        #print("DEBUG parts_count", row.get("parts_count"), "breakdown", row.get("storage_breakdown"))
+
 
 
     def get_seasonal_type(self) -> str:
@@ -588,7 +580,13 @@ class FilmBasicPage(QWizardPage):
         form.addRow("Méret (GB):", self.size_edit)
         form.addRow("Tárolás / hely:", self.storage_edit)
 
-        self.cover_group, self.lbl_cover_preview, self.btn_cover_browse, self.btn_cover_clear = build_cover_picker(self)
+        (
+            self.cover_group,
+            self.lbl_cover_preview,
+            self.btn_cover_browse,
+            self.btn_cover_clear,
+        ) = build_cover_picker(self)
+
         form.addRow(self.cover_group)
 
         layout = QVBoxLayout()
@@ -819,7 +817,11 @@ class FilmPartsPage(QWizardPage):
                 try:
                     entry["size_gb"] = round(float(size_txt.replace(",", ".")), 2)
                 except Exception:
-                    QMessageBox.warning(self, "Hiba", f"A(z) {part_no}. rész mérete nem szám: '{size_txt}'")
+                    QMessageBox.warning(
+                        self,
+                        "Hiba",
+                        f"A(z) {part_no}. rész mérete nem szám: '{size_txt}'",
+                    )
                     return False
 
             if loc:
@@ -834,39 +836,6 @@ class FilmPartsPage(QWizardPage):
 
     def nextId(self) -> int:
         return WizardPageId.FILM_VIDEO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ------ 5.oldal: Videó adatok:
@@ -950,7 +919,10 @@ class FilmAudioPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setTitle("Audio és felirat")
-        self.setSubTitle("Add meg a film hang- és feliratinformációit. Online filmnél a szolgáltatót is.")
+        self.setSubTitle(
+            "Add meg a film hang- és feliratinformációit. "
+            "Online filmnél a szolgáltatót is."
+        )
 
         self.audio_edit = QLineEdit()
         self.audio_edit.setPlaceholderText("Pl.: magyar 5.1, angol 2.0")
@@ -1051,7 +1023,13 @@ class SeriesInfoPage(QWizardPage):
         form.addRow("Befejezve:", self.finished_check)
         form.addRow("Megjegyzés:", self.notes_edit)
 
-        self.cover_group, self.lbl_cover_preview, self.btn_cover_browse, self.btn_cover_clear = build_cover_picker(self)
+        (
+            self.cover_group,
+            self.lbl_cover_preview,
+            self.btn_cover_browse,
+            self.btn_cover_clear,
+        ) = build_cover_picker(self)
+
         form.addRow(self.cover_group)
 
         layout = QVBoxLayout()
@@ -1333,7 +1311,11 @@ class DetailsPage(QWizardPage):
                 return False
 
             if length and not length.isdigit():
-                QMessageBox.warning(self, "Hiba", "A hossz mezőnek számnak kell lennie percben (pl. 120).")
+                QMessageBox.warning(
+                    self,
+                    "Hiba",
+                    "A hossz mezőnek számnak kell lennie percben (pl. 120).",
+                )
                 return False
 
         # Sorozatnál nem tartunk szigorú ellenőrzést ezen az oldalon.
@@ -1537,7 +1519,11 @@ class SummaryPage(QWizardPage):
             add_row("Szereplők:", actors)
             add_row("IMDB:", imdb)
             add_row("Már megnézve:", "Igen" if watched else "Nem", allow_empty=True)
-            add_row("Értékelés (1–10):", "Nincs megadva" if rating == 0 else str(rating), allow_empty=True)
+            add_row(
+                "Értékelés (1–10):",
+                "Nincs megadva" if rating == 0 else str(rating),
+                allow_empty=True,
+            )
 
             # Időszakos jelölés
             is_christmas = bool(self.field("christmas"))

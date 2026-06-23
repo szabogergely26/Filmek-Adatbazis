@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # ------------- #
 #   Config      #
@@ -21,12 +20,11 @@ Központi konfiguráció:
 
 # Importok:
 
-import os
 import logging
+import os
+from configparser import ConfigParser, NoOptionError, NoSectionError
 from logging.handlers import RotatingFileHandler
-from configparser import ConfigParser
 from pathlib import Path
-from configparser import NoOptionError, NoSectionError
 
 # -- Importok vége ----------
 

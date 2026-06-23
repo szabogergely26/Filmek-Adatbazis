@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 Lista nézet az adatbázisra (Filmek + Sorozatok).
@@ -19,27 +18,34 @@ Megjegyzés:
 
 from __future__ import annotations
 
-from typing import Any, Iterable
+import logging
+from collections.abc import Iterable
+from typing import Any
 
-from PySide6.QtCore import Qt, Signal, Slot, QPoint, QRect, QEvent, QModelIndex
+from PySide6.QtCore import (
+    QEvent,
+    QModelIndex,
+    QPoint,
+    QRect,
+    QSortFilterProxyModel,
+    Qt,
+    Signal,
+    Slot,
+)
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import (
-    QWidget,
-    QVBoxLayout,
-    QHBoxLayout,
-    QTableWidget,
-    QTableWidgetItem,
     QAbstractItemView,
+    QHBoxLayout,
     QHeaderView,
     QMenu,
     QPushButton,
-    QStyledItemDelegate,
     QStyle,
+    QStyledItemDelegate,
+    QTableWidget,
+    QTableWidgetItem,
+    QVBoxLayout,
+    QWidget,
 )
-
-import logging
-
-
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +131,7 @@ class HoverRowDelegate(QStyledItemDelegate):
 
 
 
-    
+
 
 
 
@@ -177,14 +183,17 @@ class ListViewWidget(QWidget):
             src_disp = src_index.data(Qt.DisplayRole)
             src_id = src_index.data(self.ID_ROLE)
             log.debug(
-                "[LIST %s] proxyRow=%s srcRow=%s disp=%r srcDisp=%r id=%r srcId=%r model=%s srcModel=%s",
+                "[LIST %s] proxyRow=%s srcRow=%s "
+                "disp=%r srcDisp=%r id=%r srcId=%r "
+                "model=%s srcModel=%s",
                 tag,
                 index.row(),
                 src_index.row(),
-                disp,
-                src_disp,
+                index.data(),
+                src_index.data(),
                 id_val,
                 src_id,
+                src_disp,
                 type(model).__name__,
                 type(src_model).__name__,
             )
@@ -213,16 +222,15 @@ class ListViewWidget(QWidget):
 
         # Proxy eset kezelése
         try:
-            from PySide6.QtCore import QSortFilterProxyModel
             if isinstance(model, QSortFilterProxyModel):
                 src_index = model.mapToSource(index)
                 src_model = model.sourceModel()
-                val = src_model.data(src_index, ID_ROLE)
+                val = src_model.data(src_index, self.ID_ROLE)
             else:
-                val = model.data(index, ID_ROLE)
+                val = model.data(index, self.ID_ROLE)
         except Exception:
             # Biztonsági fallback
-            val = model.data(index, ID_ROLE)
+            val = model.data(index, self.ID_ROLE)
 
         if val is None:
             return None
