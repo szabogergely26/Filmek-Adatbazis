@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 
 """
 Fő ablak:
@@ -47,10 +47,10 @@ from config import (
     APP_DISPLAY_NAME,
     APP_VERSION,
     APP_ORG,
-    ICON_PATH, 
-    DB_PATH, 
-    ui, 
-    USE_WIZARD_FOR_NEW, 
+    ICON_PATH,
+    DB_PATH,
+    ui,
+    USE_WIZARD_FOR_NEW,
     LOG_PATH
 )
 
@@ -1072,7 +1072,7 @@ class MainWindow(QMainWindow):
 
 
                 # DEBUG
-               # print("CARD DEBUG:", card, 
+               # print("CARD DEBUG:", card,
                 #      "name=", card.objectName(),
                 #      "hover=", card.property("hoverEnabled"))
 
