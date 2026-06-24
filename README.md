@@ -52,5 +52,5 @@ Filmek-Adatbázis helye
 
 * app név, verzió
 * útvonalak
-* `DB_PATH`
-* `LOG_PATH`
+    * `DB_PATH`
+    * `LOG_PATH`
