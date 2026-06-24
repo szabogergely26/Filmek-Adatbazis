@@ -10,8 +10,9 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Optional
+from typing import Any
 
+from db import DatabaseManager
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -32,14 +33,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from db import DatabaseManager
-
-
-
-
 #  ----- Segédfüggvények:
 
-def parse_first_int(text: str) -> Optional[int]:
+def parse_first_int(text: str) -> int | None:
     """
     Szövegből kinyeri az első előforduló egész számot.
     Üres / nem számos input esetén None-t ad vissza.
@@ -72,8 +68,8 @@ class EditDialog(QDialog):
     def __init__(
         self,
         db: DatabaseManager,
-        row: Optional[Dict[str, Any]] = None,
-        preset: Optional[Dict[str, Any]] = None,
+        row: dict[str, Any] | None = None,
+        preset: dict[str, Any] | None = None,
         parent=None,
     ):
         super().__init__(parent)
@@ -83,7 +79,7 @@ class EditDialog(QDialog):
         self.setWindowTitle("Szerkesztés" if row else "Új hozzáadása")
 
         # --- ÚJ: borító elérési út (ha a row-ban már van ilyen mező) ---
-        self._cover_path: Optional[str] = None
+        self._cover_path: str | None = None
         if self.row is not None:
             self._cover_path = self.row.get("cover_path") or None
 

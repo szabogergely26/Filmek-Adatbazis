@@ -640,7 +640,7 @@ class DatabaseManager:
                     duration,
                     size,
                     storage_location,
-                    format_type, 
+                    format_type,
                     format, director,
                     audio_tracks,
                     subtitle_tracks,

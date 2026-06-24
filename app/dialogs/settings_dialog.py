@@ -18,31 +18,28 @@ Osztályok 1: class SettingsDialog(QDialog)
 
 from __future__ import annotations
 
-from typing import Optional
-
 import os
 
+from config import APP_NAME, APP_ORG
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import (
-    QDialog,
-    QVBoxLayout,
-    QHBoxLayout,
-    QWidget,
-    QFormLayout,
-    QLineEdit,
-    QPushButton,
-    QGroupBox,
-    QRadioButton,
     QCheckBox,
     QComboBox,
-    QLabel,
+    QDialog,
     QDialogButtonBox,
     QFileDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
     QListWidget,
+    QPushButton,
+    QRadioButton,
     QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
-
-from config import APP_ORG, APP_NAME
 
 
 class SettingsDialog(QDialog):
@@ -57,8 +54,8 @@ class SettingsDialog(QDialog):
     def __init__(
         self,
         parent: QWidget | None = None,
-        default_db_path: Optional[str] = None,
-        log_file_path: Optional[str] = None,
+        default_db_path: str | None = None,
+        log_file_path: str | None = None,
     ) -> None:
         super().__init__(parent)
 
@@ -208,7 +205,8 @@ class SettingsDialog(QDialog):
             cards_group,
         )
         self.chk_hover_effect.setToolTip(
-            "Ha be van kapcsolva, a kártyák és a lista-sorok finom, 3D-s kiemelést kapnak egér fölé húzáskor."
+            "Ha be van kapcsolva, a kártyák és a lista-sorok finom, "
+            "3D-s kiemelést kapnak egér fölé húzáskor."
         )
         cards_layout.addWidget(self.chk_hover_effect)
 

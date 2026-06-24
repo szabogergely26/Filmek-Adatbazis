@@ -12,62 +12,55 @@ Fő ablak:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
-import os
-import shutil
 import logging
+import shutil
 from pathlib import Path
+from typing import Any
 
+from config import (
+    APP_DISPLAY_NAME,
+    APP_NAME,
+    APP_ORG,
+    APP_VERSION,
+    DB_PATH,
+    ICON_PATH,
+    LOG_PATH,
+    USE_WIZARD_FOR_NEW,
+    ui,
+)
+from db import DatabaseManager
+from dialogs.edit_dialog import EditDialog
+from dialogs.log_window import LogWindow
+from dialogs.settings_dialog import SettingsDialog
+from PySide6.QtCore import QEvent, QSettings, Qt, QTimer
+from PySide6.QtGui import QAction, QActionGroup, QIcon
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
+    QApplication,
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
+    QMainWindow,
+    QMenu,
+    QMessageBox,
     QPushButton,
     QScrollArea,
-    QGridLayout,
     QSizePolicy,
     QStackedWidget,
     QTextBrowser,
-    QFileDialog,
-    QLineEdit,
-    QDialog,
-    QDialogButtonBox,
-    QMessageBox,
-    QApplication,
     QToolBar,
     QToolButton,
-    QMenu,
+    QVBoxLayout,
+    QWidget,
 )
-from PySide6.QtGui import QAction, QIcon, QActionGroup
-from PySide6.QtCore import Qt, QEvent, QTimer, QSettings
-
-from config import (
-    APP_NAME,
-    APP_DISPLAY_NAME,
-    APP_VERSION,
-    APP_ORG,
-    ICON_PATH, 
-    DB_PATH, 
-    ui, 
-    USE_WIZARD_FOR_NEW, 
-    LOG_PATH
-)
-
-from db import DatabaseManager
-from wizard.wizard import AddItemWizard
-from dialogs.edit_dialog import EditDialog
-from views.movie_card import MovieCard
-from dialogs.log_window import LogWindow
-from views.list_view import ListViewWidget
-from dialogs.settings_dialog import SettingsDialog
 from themes.theme_utils import apply_theme_from_settings
-from dialogs.details_dialog import ModernDetailDialog
-
-
 from views.home_page import HomePage
-
+from views.list_view import ListViewWidget
+from views.movie_card import MovieCard
+from wizard.wizard import AddItemWizard
 
 # --------------------------------------------------------------------------------------------------
 
@@ -101,8 +94,8 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.db = dbm          # kompatibilitásért
         self.dbm = dbm         # új név
-        self.all_rows: List[Dict[str, Any]] = []
-        self.grouped: Dict[str, List[Dict[str, Any]]] = {}
+        self.all_rows: list[dict[str, Any]] = []
+        self.grouped: dict[str, list[dict[str, Any]]] = {}
 
 
         # --- UI beállítások (hover, stb.) ---
@@ -710,7 +703,7 @@ class MainWindow(QMainWindow):
         """
         try:
             self.db.update(item_id, {"notes": notes})
-        except Exception as e:
+        except Exception:
             LOGGER.exception("Megjegyzés mentése sikertelen (id=%s)", item_id)
             return
 
@@ -733,7 +726,11 @@ class MainWindow(QMainWindow):
         # 1) Biztos forrás: DB
         row = self.dbm.get_by_id(item_id)
         if not row:
-            QMessageBox.warning(self, "Részletek", f"Nem található a sor az adatbázisban (id={item_id}).")
+            QMessageBox.warning(
+                self,
+                "Részletek",
+                f"Nem található a sor az adatbázisban (id={item_id}).",
+            )
             return
 
         if ui_log.isEnabledFor(logging.DEBUG):
@@ -774,7 +771,7 @@ class MainWindow(QMainWindow):
         return items
 
 
-    def _match_quality(self, row: Dict[str, Any]) -> bool:
+    def _match_quality(self, row: dict[str, Any]) -> bool:
         selected = getattr(self, "filter_quality", set()) or set()
         if not selected:
             return True
@@ -789,7 +786,7 @@ class MainWindow(QMainWindow):
 
 
 
-    def _match_seasonal(self, row: Dict[str, Any]) -> bool:
+    def _match_seasonal(self, row: dict[str, Any]) -> bool:
         selected = getattr(self, "filter_seasonal", set()) or set()
         if not selected:
             return True
@@ -871,7 +868,7 @@ class MainWindow(QMainWindow):
 
 
     # --- Segéd: sor keresése ID alapján a cache-ben ---
-    def _find_row_by_id(self, item_id: int) -> Dict[str, Any] | None:
+    def _find_row_by_id(self, item_id: int) -> dict[str, Any] | None:
         for r in self.all_rows:
             try:
                 if int(r.get("id", -1)) == int(item_id):
@@ -885,7 +882,7 @@ class MainWindow(QMainWindow):
 
     # --- Csoportosítás címenként (pontos egyezés) ---
     def group_by_title(self) -> None:
-        grouped: Dict[str, List[Dict[str, Any]]] = {}
+        grouped: dict[str, list[dict[str, Any]]] = {}
         for r in self.all_rows:
             title = (r.get("title") or "").strip()
             if not title:
@@ -1026,7 +1023,7 @@ class MainWindow(QMainWindow):
                 pass
 
             self.clear_cards()
-            self._card_widgets: List[tuple[QWidget, str]] = []
+            self._card_widgets: list[tuple[QWidget, str]] = []
 
             titles = sorted(self.grouped.keys(), key=lambda s: s.lower())
             cols = 3
@@ -1067,7 +1064,7 @@ class MainWindow(QMainWindow):
 
 
                 # DEBUG
-               # print("CARD DEBUG:", card, 
+               # print("CARD DEBUG:", card,
                 #      "name=", card.objectName(),
                 #      "hover=", card.property("hoverEnabled"))
 
@@ -1236,11 +1233,26 @@ class MainWindow(QMainWindow):
             """
             <h2>Témakörök</h2>
             <ul>
-              <li><b>Film, több rész:</b> ugyanazzal a címmel több sor, a <i>Rész/Évad</i> mezőben a sorszám (1..N).</li>
-              <li><b>Sorozat:</b> ugyanazzal a címmel több sor, a <i>Rész/Évad</i> mezőben az évad száma (1..N).</li>
-              <li><b>Rész címe</b> (opcionális): az adott rész/film alcíme. A kártyacím ettől nem változik.</li>
-              <li>A kártyán az összesítő (részek/évadok, év-tartomány, összméret) automatikusan számolódik.</li>
-              <li><b>Részletek</b> ablakban tételes lista + szerkesztés/törlés a kijelölt elemre.</li>
+              <li>
+                <b>Film, több rész:</b> ugyanazzal a címmel több sor,
+                a <i>Rész/Évad</i> mezőben a sorszám (1..N).
+              </li>
+              <li>
+                <b>Sorozat:</b> ugyanazzal a címmel több sor,
+                a <i>Rész/Évad</i> mezőben az évad száma (1..N).
+              </li>
+              <li>
+                <b>Rész címe</b> (opcionális): az adott rész/film alcíme.
+                A kártyacím ettől nem változik.
+              </li>
+              <li>
+                A kártyán az összesítő — részek/évadok, év-tartomány,
+                összméret — automatikusan számolódik.
+              </li>
+              <li>
+                <b>Részletek</b> ablakban tételes lista,
+                valamint szerkesztés/törlés a kijelölt elemre.
+              </li>
             </ul>
             """
         )

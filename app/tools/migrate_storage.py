@@ -8,9 +8,10 @@ import shutil
 import sqlite3
 from pathlib import Path
 
-
 # ==== BEÁLLÍTÁSOK ====
-DB_PATH = Path.home() / ".local" / "share" / "Filmekadatbazis" / "movies.db"       # írd át, ha máshol van a DB
+
+# írd át, ha máshol van a DB
+DB_PATH = Path.home() / ".local" / "share" / "Filmekadatbazis" / "movies.db"
 BACKUP_SUFFIX = ".pre_storage_migration.bak"
 
 # A régi oszlop neve a movies táblában:

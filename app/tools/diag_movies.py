@@ -3,8 +3,11 @@
 
 # -*- coding: utf-8 -*-
 
-import sqlite3, re, sys, os
-from collections import defaultdict, Counter
+import os
+import re
+import sqlite3
+import sys
+from collections import Counter, defaultdict
 
 DB_PATH = "/home/szaboger/Filmek-Adatbázis/movies.db"  # ha kell, módosítható
 
@@ -19,7 +22,7 @@ def parse_gb(s):
         return None
     try:
         return float(m.group(1).replace(",", "."))
-    except:
+    except Exception:
         return None
 
 

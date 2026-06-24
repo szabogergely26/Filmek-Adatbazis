@@ -14,12 +14,10 @@ Tartalom:
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any, Optional, Dict, List
-import re
-import copy
-
 import logging
+import re
+from collections.abc import Mapping
+from typing import Any
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
@@ -28,17 +26,13 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
-    QScrollArea,
+    QPushButton,
     QSizePolicy,
     QTabWidget,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
-    QTextEdit,
-    QPushButton,
-    QFormLayout,
 )
-
-from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +41,7 @@ LOGGER = logging.getLogger(__name__)
 # Segédek
 # ---------------------------------------------------------------------
 
-def _load_cover_pixmap(movie: Mapping[str, Any]) -> Optional[QPixmap]:
+def _load_cover_pixmap(movie: Mapping[str, Any]) -> QPixmap | None:
     """
     cover_path/cover_file/cover → QPixmap (ha nincs/hibás, akkor None).
     """
@@ -107,7 +101,7 @@ def _human_type(movie: Mapping[str, Any]) -> str:
 
 _SIZE_RE = re.compile(r"^\s*([\d.,]+)\s*(tb|gb|mb)\s*$", re.IGNORECASE)
 
-def _parse_size_text_to_gb(size_text: Optional[str]) -> Optional[float]:
+def _parse_size_text_to_gb(size_text: str | None) -> float | None:
     if not size_text:
         return None
     s = size_text.strip().lower().replace(",", ".")
@@ -187,7 +181,7 @@ def _find_db_conn_from_widget(w: Any):
 
 
 
-def _enrich_movie_with_parts(parent: Any, movie: Dict[str, Any]) -> None:
+def _enrich_movie_with_parts(parent: Any, movie: dict[str, Any]) -> None:
     """
     Többrészes FILM régi modellhez:
     - Ha ugyanarra a címre több sor van (>=2), akkor a Details-ben listázzuk részenként.
@@ -248,12 +242,18 @@ def _enrich_movie_with_parts(parent: Any, movie: Dict[str, Any]) -> None:
 
         # Rendezés: ha van explicit part, akkor part szerint, különben id szerint
         if any_has_part:
-            rows_sorted = sorted(rows, key=lambda r: (_to_int(r[1]) if _to_int(r[1]) > 0 else 999999, _to_int(r[0])))
+            rows_sorted = sorted(
+                rows,
+                key=lambda r: (
+                    _to_int(r[1]) if _to_int(r[1]) > 0 else 999999,
+                    _to_int(r[0]),
+                ),
+            )
         else:
             rows_sorted = sorted(rows, key=lambda r: _to_int(r[0]))
 
         total = 0.0
-        parts_rows: List[Dict[str, Any]] = []
+        parts_rows: list[dict[str, Any]] = []
 
         # Szintetikus sorszám, ha nincs part
         synth = 1
@@ -286,9 +286,6 @@ def _enrich_movie_with_parts(parent: Any, movie: Dict[str, Any]) -> None:
         if _to_int(movie.get("parts_count") or 1) < len(parts_rows):
             movie["parts_count"] = len(parts_rows)
 
-        # opcionális debug:
-        # print("[DETAILS enrich]", title, "rows=", len(parts_rows), "total=", movie["_parts_total_gb"])
-
     except Exception:
         return
 
@@ -298,7 +295,7 @@ def _enrich_movie_with_parts(parent: Any, movie: Dict[str, Any]) -> None:
 
 
 
-def _format_gb(gb: Optional[float]) -> str:
+def _format_gb(gb: float | None) -> str:
     if gb is None:
         return ""
     # 2 tized, de kulturáltan (23.00 -> 23)
@@ -306,11 +303,11 @@ def _format_gb(gb: Optional[float]) -> str:
     return f"{s} GB"
 
 
-def _build_parts_lines(movie: Mapping[str, Any]) -> List[str]:
+def _build_parts_lines(movie: Mapping[str, Any]) -> list[str]:
     rows = movie.get("_parts_rows")
     if not isinstance(rows, list) or not rows:
         return []
-    lines: List[str] = []
+    lines: list[str] = []
     for r in rows:
         if not isinstance(r, dict):
             continue
@@ -354,7 +351,7 @@ class InfoRow(QWidget):
         self,
         label_text: str,
         value_text: str | None,
-        parent: Optional[QWidget] = None,
+        parent: QWidget | None = None,
     ) -> None:
         super().__init__(parent)
         self.setObjectName("infoRow")
@@ -394,7 +391,7 @@ class InfoRow(QWidget):
 # ---------------------------------------------------------------------
 
 class ModernVideoTab(QWidget):
-    def __init__(self, movie: Mapping[str, Any], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
@@ -430,7 +427,7 @@ class ModernVideoTab(QWidget):
 
 
 class ModernAudioTab(QWidget):
-    def __init__(self, movie: Mapping[str, Any], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
@@ -457,7 +454,7 @@ class ModernNotesTab(QWidget):
       - get_notes_text() helper a mentéshez
     """
 
-    def __init__(self, movie: Mapping[str, Any], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self._movie = movie
@@ -500,7 +497,7 @@ class ModernTechnicalTab(QWidget):
         "audio_tracks", "subtitle_tracks",
     ]
 
-    def __init__(self, movie: Mapping[str, Any], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
@@ -536,7 +533,7 @@ class ModernDetailDialog(QDialog):
     edit_requested = Signal(int)
     notes_save_requested = Signal(int, str)
 
-    def __init__(self, movie: Mapping[str, Any], parent: Optional[QWidget] = None) -> None:
+    def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._movie: Mapping[str, Any] = movie
 
@@ -799,8 +796,12 @@ class ModernDetailDialog(QDialog):
 
         is_completed = movie.get("is_completed")
         if is_completed is not None and is_completed != "":
-            layout.addWidget(InfoRow("Befejezett sorozat:", "Igen" if bool(is_completed) else "Nem"))
-
+            layout.addWidget(
+                InfoRow(
+                    "Befejezett sorozat:",
+                    "Igen" if bool(is_completed) else "Nem",
+                )
+            )
         layout.addStretch(1)
         return tab
 

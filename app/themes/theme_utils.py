@@ -16,12 +16,12 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QSettings
-from PySide6.QtGui import QPalette, QColor
+from PySide6.QtGui import QColor, QPalette
 from PySide6.QtWidgets import QApplication
 
 # Próbáljuk a config-ból venni az app nevét, de ha nincs, legyen alapértelmezés.
 try:
-    from config import APP_ORG, APP_NAME
+    from config import APP_NAME, APP_ORG
 except ImportError:
     APP_ORG = "FilmekAdatbazis"
     APP_NAME = "Movies7"
