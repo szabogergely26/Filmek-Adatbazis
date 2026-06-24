@@ -55,7 +55,7 @@ APP_ORG = "Filmekadatbazis"
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
-ICON_PATH = ROOT / "ikonok" / "Sajat" /"movies1.png"
+ICON_PATH = ROOT / "ikonok" / "Sajat" / "DEV" / "movies1_dev.png"
 PROVIDERS_DIR = ROOT / "ikonok" / "providers"
 COVER_DIR = ROOT / "cover"
 
