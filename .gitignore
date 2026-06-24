@@ -30,7 +30,7 @@ logs/
 *.sqlite
 *.sqlite3
 *.bak
-cover/
+
 # -------------------------
 # Build / packaging
 # -------------------------
