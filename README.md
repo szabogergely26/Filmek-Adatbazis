@@ -54,3 +54,23 @@ Filmek-Adatbázis helye
 * útvonalak
     * `DB_PATH`
     * `LOG_PATH`
+
+
+
+
+## Későbbi UI-polírozás
+
+### - Menüelemek ikonozása Qt / rendszer témaikonokkal
+  * - Fájl menü: hozzáadás, import, export, kilépés
+  * - Adatok menü: frissítés, adatbázis műveletek, beállítások
+  * - Súgó menü: súgó, változásnapló, névjegy, log ablak
+
+### - Külön eszköztár nem szükséges
+  * - A menüsor, a bal oldali navigáció és az oldalak saját gombjai elegendők.
+  * - Egy külön toolbar jelenleg csak ismételné a már meglévő funkciókat.
+
+### - Kezdőoldal vízszintes görgetősáv témázása
+  * - A Kezdőoldalon megjelenő vízszintes scrollbar stílusa legyen egységes az Adatbázis rész görgetősávjával.
+  * - Modern témában ugyanazt a scrollbar QSS-t használja, mint az Adatbázis nézet.
+  * - Classic témában maradjon visszafogott, Qt-native jellegű.
+  * - Cél: a Kezdőoldal és az Adatbázis oldal vizuálisan egységesebb legyen.
