@@ -1,0 +1,20 @@
+[Desktop Entry]
+Categories=AudioVideo;Video;
+Comment[hu_HU]=Filmek 7.0
+Comment=Filmek 7.0
+Exec=/home/szaboger/Projects/Filmek-Adatbazis/run.sh
+GenericName[hu_HU]=
+GenericName=
+Icon=/home/szaboger/Projects/Filmek-Adatbazis/ikonok/Sajat/DEV/movies1_dev.png
+MimeType=
+Name[hu_HU]=Filmek-Adatbázis
+Name=Filmek-Adatbázis
+NoDisplay=false
+Path=/home/szaboger/Projects/Filmek-Adatbazis
+PrefersNonDefaultGPU=false
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=
