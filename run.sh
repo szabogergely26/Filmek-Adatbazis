@@ -11,4 +11,4 @@ if [[ ! -x "$VENV_PY" ]]; then
 fi
 
 cd "$APP_DIR"
-exec "$VENV_PY" ./movies7.0.py
+exec "$VENV_PY" ./main.py
