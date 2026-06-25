@@ -2,8 +2,11 @@
 Categories=AudioVideo;Video;
 Comment[hu_HU]=Filmek 7.0
 Comment=Filmek 7.0
-Exec=/home/szaboger/Projects/Filmek-Adatbazis/run7.sh
-Icon=/home/szaboger/Projects/Filmek-Adatbazis/ikonok/filmek.png
+Exec=/home/szaboger/Projects/Filmek-Adatbazis/run.sh
+GenericName[hu_HU]=
+GenericName=
+Icon=/home/szaboger/Projects/Filmek-Adatbazis/ikonok/sajat/movies2.png
+MimeType=
 Name[hu_HU]=Filmek-Adatbázis
 Name=Filmek-Adatbázis
 NoDisplay=false
