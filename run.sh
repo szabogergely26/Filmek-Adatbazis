@@ -7,4 +7,4 @@ VENV_PY="$SCRIPT_DIR/venv/bin/python"
 
 cd "$APP_DIR"
 
-exec "$VENV_PY" ./movies7.0.py
+exec "$VENV_PY" ./main.py
