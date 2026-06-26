@@ -97,7 +97,7 @@ Vagy közvetlenül:
 
 ```bash
 cd app
-../venv/bin/python ./movies7.0.py
+../venv/bin/python ./main.py
 ```
 
 ---
@@ -170,7 +170,7 @@ Fontos:
 
 ```text
 app/
-  movies7.0.py
+  main.py
   main_window.py
   config.py
   changelog.html
@@ -216,7 +216,7 @@ app/
 
 ## Fontosabb fájlok
 
-### `app/movies7.0.py`
+### `app/main.py`
 
 Az alkalmazás fő belépési pontja.
 Feladatai:
