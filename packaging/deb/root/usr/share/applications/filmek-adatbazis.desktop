@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Filmek-Adatbázis
+Comment[hu_HU]=Offline film- és sorozat-adatbázis
+Comment=Offline movie and series database
+Exec=filmek-adatbazis
+Icon=filmek-adatbazis
+Categories=AudioVideo;Video;Database;
+StartupNotify=true
+Terminal=false

@@ -52,19 +52,26 @@ APP_ORG = "Filmekadatbazis"
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 
+IS_INSTALLED = str(ROOT).startswith("/usr/share/filmek-adatbazis")
+
 ICON_PATH = ROOT / "ikonok" / "filmek.ico"
 PROVIDERS_DIR = ROOT / "ikonok" / "providers"
 COVER_DIR = ROOT / "cover"
 
-# ------------------------------------ App adatkönyvtár (DEV) ------------------------------------
+# ------------------------------------ App adatkönyvtár ------------------------------------
 
-APP_DATA_DIR = ROOT / "_appdata" / "dev"
+if IS_INSTALLED:
+    APP_DATA_DIR = Path.home() / ".local" / "share" / APP_NAME
+else:
+    APP_DATA_DIR = ROOT / "_appdata" / "dev"
+
 APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 CONFIG_PATH = APP_DATA_DIR / "Movies7.conf"
 DB_PATH = APP_DATA_DIR / "movies.db"
 LOG_DIR = APP_DATA_DIR / "logs"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+
 
 # Globális ConfigParser példány
 config: ConfigParser = ConfigParser()
