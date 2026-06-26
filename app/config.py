@@ -236,3 +236,46 @@ def is_provider_badges_enabled() -> bool:
 
 def is_wizard_enabled() -> bool:
     return get_bool("General", "use_wizard_for_new", fallback=True)
+
+
+
+# ---------- Borítóképek segédfüggvény ----------------
+
+def normalize_cover_path(path: str | Path | None) -> str:
+    """
+    Borítóútvonal mentéshez.
+
+    Ha a kiválasztott kép a COVER_DIR alatt van, csak relatív útvonalat mentünk.
+    Egyébként marad az abszolút útvonal.
+    """
+    if not path:
+        return ""
+
+    p = Path(path).expanduser()
+
+    try:
+        return str(p.resolve().relative_to(COVER_DIR.resolve()))
+    except ValueError:
+        return str(p)
+
+
+def resolve_cover_path(path: str | Path | None) -> Path | None:
+    """
+    Borítóútvonal feloldása megjelenítéshez.
+
+    - üres érték → None
+    - abszolút útvonal → az eredeti Path
+    - relatív útvonal → COVER_DIR / relatív útvonal
+    """
+    if not path:
+        return None
+
+    p = Path(str(path).strip()).expanduser()
+
+    if not str(p):
+        return None
+
+    if p.is_absolute():
+        return p
+
+    return COVER_DIR / p

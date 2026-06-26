@@ -41,6 +41,7 @@ from config import (
     ENABLE_PROVIDER_BADGES,
     NO_COVER_TEXT,
     SHOW_COVER_ON_CARD,
+    resolve_cover_path,
 )
 from dialogs.details_dialog import open_details_dialog
 from dialogs.edit_dialog import EditDialog
@@ -753,10 +754,12 @@ class MovieCard(QFrame):
 
         cover_path = (
             first.get("cover_path") or first.get("cover_file") or first.get("cover") or ""
-        ).strip()
+        )
 
-        if cover_path and Path(cover_path).is_file():
-            pm = QPixmap(cover_path)
+        resolved_cover_path = resolve_cover_path(cover_path)
+
+        if resolved_cover_path and resolved_cover_path.is_file():
+            pm = QPixmap(str(resolved_cover_path))
             if not pm.isNull():
                 return pm
 
