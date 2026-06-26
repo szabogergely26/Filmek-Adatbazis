@@ -17,6 +17,7 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
+from config import resolve_cover_path
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -42,19 +43,22 @@ LOGGER = logging.getLogger(__name__)
 def _load_cover_pixmap(movie: Mapping[str, Any]) -> QPixmap | None:
     """
     cover_path/cover_file/cover → QPixmap (ha nincs/hibás, akkor None).
+    Támogatja a régi abszolút és az új relatív borítóútvonalakat is.
     """
-    path = (
+    cover_path = (
         (movie.get("cover_path") or "")
         or (movie.get("cover_file") or "")
         or (movie.get("cover") or "")
     )
-    path = str(path).strip()
-    if not path:
+
+    resolved_cover_path = resolve_cover_path(cover_path)
+
+    if not resolved_cover_path or not resolved_cover_path.is_file():
         return None
 
-    pm = QPixmap(path)
+    pm = QPixmap(str(resolved_cover_path))
+
     if pm.isNull():
-        LOGGER.warning("Nem sikerült betölteni a borítóképet: %s", path)
         return None
 
     return pm

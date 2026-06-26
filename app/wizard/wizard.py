@@ -26,7 +26,7 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Any
 
-from config import LOGGER
+from config import LOGGER, normalize_cover_path, resolve_cover_path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -143,12 +143,20 @@ def clear_cover_for_page(page: QWidget) -> None:
 
 def update_cover_preview_for_page(page: QWidget) -> None:
     label = getattr(page, "lbl_cover_preview", None)
+
     if label is None:
         return
 
     cover_path = getattr(page, "_cover_path", None)
+
     if cover_path:
-        pix = QPixmap(cover_path)
+        resolved_cover_path = resolve_cover_path(cover_path)
+
+        if resolved_cover_path and resolved_cover_path.is_file():
+            pix = QPixmap(str(resolved_cover_path))
+        else:
+            pix = QPixmap()
+
         if not pix.isNull():
             label.setPixmap(pix)
             label.setText("")
@@ -213,7 +221,7 @@ class AddItemWizard(QWizard):
             year = parse_first_int(self.property("year"))
             size_raw = str(self.property("size_gb") or "").strip()
             storage = str(self.property("storage") or "").strip()
-            cover_path = str(self.property("cover_path") or "").strip()
+            cover_path = normalize_cover_path(self.property("cover_path"))
 
             genres = str(self.property("genres") or "").strip()
             duration_min = parse_first_int(self.property("duration_min"))
@@ -289,7 +297,7 @@ class AddItemWizard(QWizard):
 
         # Tárolás, felbontás, formátum (DetailsPage)
         storage = str(self.field("storage") or "").strip()
-        cover_path = str(self.property("cover_path") or "").strip()
+        cover_path = normalize_cover_path(self.property("cover_path"))
         resolution = str(self.field("resolution") or "").strip()   # pl. "1080p"
         format_txt = str(self.field("length") or "").strip() # sorozatnál: Formátum mező (Pl. "MKV")
 
@@ -339,7 +347,7 @@ class AddItemWizard(QWizard):
 
 
 
-
+    # Mentés:
     def accept(self) -> None:
         """
         Befejezés gomb – adatok összegyűjtése és beszúrás az adatbázisba.

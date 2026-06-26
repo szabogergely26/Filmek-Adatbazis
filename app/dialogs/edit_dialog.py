@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from config import normalize_cover_path, resolve_cover_path
 from db import DatabaseManager
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -273,7 +274,13 @@ class EditDialog(QDialog):
 
     def _update_cover_preview(self) -> None:
         if self._cover_path:
-            pix = QPixmap(self._cover_path)
+            resolved_cover_path = resolve_cover_path(self._cover_path)
+
+            if resolved_cover_path and resolved_cover_path.is_file():
+                pix = QPixmap(str(resolved_cover_path))
+            else:
+                pix = QPixmap()
+
             if not pix.isNull():
                 self.lbl_cover_preview.setPixmap(pix)
                 self.lbl_cover_preview.setText("")
@@ -342,8 +349,7 @@ class EditDialog(QDialog):
 
         # --- Opcionális: borítókép mentése, ha a régi row-ban már volt ilyen mező ---
         if self.row is not None and "cover_path" in self.row:
-            row["cover_path"] = self._cover_path or ""
-
+            row["cover_path"] = normalize_cover_path(self._cover_path)
         if not row["title"]:
             QMessageBox.warning(self, "Hiányzó mező", "A Cím mező kötelező.")
             return
