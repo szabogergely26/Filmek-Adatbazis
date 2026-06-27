@@ -17,3 +17,14 @@ ignore = [
 
 [tool.ruff.format]
 quote-style = "double"
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "config",
+    "db",
+    "dialogs",
+    "themes",
+    "utils",
+    "views",
+    "wizard",
+]

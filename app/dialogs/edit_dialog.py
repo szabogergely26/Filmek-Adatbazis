@@ -12,8 +12,6 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from config import normalize_cover_path, resolve_cover_path
-from db import DatabaseManager
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -33,6 +31,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from config import normalize_cover_path, resolve_cover_path
+from db import DatabaseManager
 
 #  ----- Segédfüggvények:
 

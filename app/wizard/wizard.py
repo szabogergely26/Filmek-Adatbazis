@@ -29,7 +29,6 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Any
 
-from config import LOGGER, normalize_cover_path, resolve_cover_path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -56,6 +55,8 @@ from PySide6.QtWidgets import (
     QWizard,
     QWizardPage,
 )
+
+from config import LOGGER, normalize_cover_path, resolve_cover_path
 from utils.utils import parse_first_int
 
 logger = LOGGER.getChild("Wizard")

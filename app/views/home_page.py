@@ -1,11 +1,18 @@
 # /app/views/home_page.py
 # --------------------------
 
-from pathlib import Path
-
 from PySide6.QtCore import QEvent, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QFrame, QHBoxLayout, QLabel, QScrollArea, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
+
+from config import resolve_cover_path
 
 # ---- Helper függvények -----
 
@@ -115,8 +122,10 @@ class HomePage(QWidget):
         cover_label.setAlignment(Qt.AlignCenter)
         cover_label.setFixedHeight(160)
 
-        if cover_path and Path(str(cover_path)).exists():
-            pix = QPixmap(str(cover_path))
+        resolved_cover_path = resolve_cover_path(cover_path)
+
+        if resolved_cover_path and resolved_cover_path.is_file():
+            pix = QPixmap(str(resolved_cover_path))
             cover_label.setPixmap(
                 pix.scaled(
                     120,
@@ -129,6 +138,7 @@ class HomePage(QWidget):
             cover_label.setText("Nincs borító")
 
         layout.addWidget(cover_label)
+
 
 
         title = QLabel(item.get("title") or "Cím nélkül")

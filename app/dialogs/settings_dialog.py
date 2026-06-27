@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import os
 
-from config import APP_NAME, APP_ORG
 from PySide6.QtCore import QSettings
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -40,6 +39,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from config import APP_NAME, APP_ORG
 
 
 class SettingsDialog(QDialog):

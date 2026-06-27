@@ -9,9 +9,10 @@ import re
 import unicodedata
 from pathlib import Path
 
-from config import PANIC_NO_ICONS
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QImageReader, QPixmap
+
+from config import PANIC_NO_ICONS
 
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_PROVIDERS_DIR = BASE_DIR.parent / "ikonok" / "providers"

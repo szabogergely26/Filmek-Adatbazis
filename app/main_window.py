@@ -17,21 +17,6 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from config import (
-    APP_DISPLAY_NAME,
-    APP_NAME,
-    APP_ORG,
-    APP_VERSION,
-    DB_PATH,
-    ICON_PATH,
-    LOG_PATH,
-    USE_WIZARD_FOR_NEW,
-    ui,
-)
-from db import DatabaseManager
-from dialogs.edit_dialog import EditDialog
-from dialogs.log_window import LogWindow
-from dialogs.settings_dialog import SettingsDialog
 from PySide6.QtCore import QEvent, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon
 from PySide6.QtWidgets import (
@@ -56,6 +41,22 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from config import (
+    APP_DISPLAY_NAME,
+    APP_NAME,
+    APP_ORG,
+    APP_VERSION,
+    DB_PATH,
+    ICON_PATH,
+    LOG_PATH,
+    USE_WIZARD_FOR_NEW,
+    ui,
+)
+from db import DatabaseManager
+from dialogs.edit_dialog import EditDialog
+from dialogs.log_window import LogWindow
+from dialogs.settings_dialog import SettingsDialog
 from themes.theme_utils import apply_theme_from_settings
 from views.home_page import HomePage
 from views.list_view import ListViewWidget

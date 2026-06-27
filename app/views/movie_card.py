@@ -30,6 +30,18 @@ import re
 from pathlib import Path
 from typing import Any
 
+from PySide6.QtCore import QSettings, Qt, QTimer
+from PySide6.QtGui import QFontMetrics, QPixmap
+from PySide6.QtWidgets import (
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+)
+
 from config import (
     APP_NAME,
     APP_ORG,
@@ -45,17 +57,6 @@ from config import (
 )
 from dialogs.details_dialog import open_details_dialog
 from dialogs.edit_dialog import EditDialog
-from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QFontMetrics, QPixmap
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QMessageBox,
-    QPushButton,
-    QSizePolicy,
-    QVBoxLayout,
-)
 from themes.icons import PROVIDER_EMOJI, norm, provider_pixmap
 from utils.utils import (
     as_int,

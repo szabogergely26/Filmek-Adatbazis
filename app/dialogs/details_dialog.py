@@ -19,7 +19,6 @@ import re
 from collections.abc import Mapping
 from typing import Any
 
-from config import resolve_cover_path
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -34,6 +33,8 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+
+from config import resolve_cover_path
 
 LOGGER = logging.getLogger(__name__)
 
