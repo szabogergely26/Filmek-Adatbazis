@@ -23,6 +23,7 @@ known-first-party = [
     "config",
     "db",
     "dialogs",
+    "main_window",
     "themes",
     "utils",
     "views",
