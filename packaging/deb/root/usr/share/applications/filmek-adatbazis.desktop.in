@@ -1,10 +1,10 @@
 [Desktop Entry]
 Type=Application
-Name=Filmek-Adatbázis
+Name=@APP_DISPLAY_NAME@
 Comment[hu_HU]=Offline film- és sorozat-adatbázis
 Comment=Offline movie and series database
-Exec=filmek-adatbazis
-Icon=filmek-adatbazis
+Exec=@EXECUTABLE_NAME@
+Icon=@PACKAGE_NAME@
 Categories=AudioVideo;Video;Database;
 StartupNotify=true
 Terminal=false

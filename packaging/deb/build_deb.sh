@@ -14,6 +14,17 @@ VERSION="$(
     python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import DEB_VERSION; print(DEB_VERSION)"
 )"
 
+APP_DISPLAY_NAME="$(
+    python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import APP_DISPLAY_NAME; print(APP_DISPLAY_NAME)"
+)"
+
+EXECUTABLE_NAME="$(
+    python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import EXECUTABLE_NAME; print(EXECUTABLE_NAME)"
+)"
+
+DESKTOP_FILE_NAME="$(
+    python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import DESKTOP_FILE_NAME; print(DESKTOP_FILE_NAME)"
+)"
 
 BUILD_DIR="$SCRIPT_DIR/build"
 ROOT_DIR="$SCRIPT_DIR/root"
@@ -33,6 +44,27 @@ mkdir -p "$DIST_DIR"
 
 # Alap root fájlok másolása
 cp -a "$ROOT_DIR/." "$PACKAGE_DIR/"
+
+# Indító script generálása
+mkdir -p "$PACKAGE_DIR/usr/bin"
+
+sed \
+    -e "s/@PACKAGE_NAME@/$PACKAGE_NAME/g" \
+    "$ROOT_DIR/usr/bin/filmek-adatbazis.in" > "$PACKAGE_DIR/usr/bin/$EXECUTABLE_NAME"
+
+rm -f "$PACKAGE_DIR/usr/bin/filmek-adatbazis.in"
+
+
+# Desktop fájl generálása
+mkdir -p "$PACKAGE_DIR/usr/share/applications"
+
+sed \
+    -e "s/@APP_DISPLAY_NAME@/$APP_DISPLAY_NAME/g" \
+    -e "s/@EXECUTABLE_NAME@/$EXECUTABLE_NAME/g" \
+    -e "s/@PACKAGE_NAME@/$PACKAGE_NAME/g" \
+    "$ROOT_DIR/usr/share/applications/filmek-adatbazis.desktop.in" > "$PACKAGE_DIR/usr/share/applications/$DESKTOP_FILE_NAME"
+
+rm -f "$PACKAGE_DIR/usr/share/applications/filmek-adatbazis.desktop.in"
 
 # App másolása
 mkdir -p "$PACKAGE_DIR/usr/share/$PACKAGE_NAME"
@@ -65,7 +97,7 @@ sed \
     "$SCRIPT_DIR/control.in" > "$DEBIAN_DIR/control"
 
 # Jogosultságok
-chmod 755 "$PACKAGE_DIR/usr/bin/$PACKAGE_NAME"
+chmod 755 "$PACKAGE_DIR/usr/bin/$EXECUTABLE_NAME"
 
 # Python cache törlése
 # Python cache fájlok eltávolítása a csomagból
