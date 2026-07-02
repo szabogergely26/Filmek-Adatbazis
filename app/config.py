@@ -26,6 +26,19 @@ from configparser import ConfigParser, NoOptionError, NoSectionError
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from version_info import (
+    APP_DISPLAY_NAME as APP_DISPLAY_NAME,
+)
+from version_info import (
+    APP_NAME as APP_NAME,
+)
+from version_info import (
+    APP_ORG as APP_ORG,
+)
+from version_info import (
+    APP_VERSION as APP_VERSION,
+)
+
 # -- Importok vége ----------
 
 
@@ -38,12 +51,6 @@ from pathlib import Path
 
 
 
-# ---------------- Alap adatok ----------------
-
-APP_NAME = "FilmekAdatbazis"             # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
-APP_DISPLAY_NAME = "Filmek Adatbázis"
-APP_VERSION = "10.0"
-APP_ORG = "Filmekadatbazis"
 
 
 

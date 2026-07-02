@@ -17,10 +17,8 @@ from pathlib import Path
 from typing import Any
 
 from config import (
-    APP_DISPLAY_NAME,
     APP_NAME,
     APP_ORG,
-    APP_VERSION,
     DB_PATH,
     ICON_PATH,
     LOG_PATH,
@@ -56,6 +54,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from themes.theme_utils import apply_theme_from_settings
+from version_info import get_about_version_text, get_window_title
 from views.home_page import HomePage
 from views.list_view import ListViewWidget
 from views.movie_card import MovieCard
@@ -117,7 +116,7 @@ class MainWindow(QMainWindow):
 
 
         # Ablak alap
-        self.setWindowTitle(f"{APP_DISPLAY_NAME} {APP_VERSION}")
+        self.setWindowTitle(get_window_title())
         self.resize(1500, 900)   # 1.érték: X tengely, 2.érték: Y tengely
         self.setWindowIcon(QIcon(str(ICON_PATH)))
 
@@ -1273,7 +1272,7 @@ class MainWindow(QMainWindow):
             f"""
             <h2>{APP_NAME}</h2>
             <p>Helyi, offline Python/PySide6 alkalmazás.</p>
-            <p>Verzió: {APP_VERSION}</p>
+            <p>{get_about_version_text()}</p>
             <p>(kártyanézet, CRUD, import/export, autó keresés)</p>
             <p>Adatbázis: <code>{DB_PATH}</code></p>
             """
