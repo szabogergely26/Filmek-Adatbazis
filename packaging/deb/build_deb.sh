@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PACKAGE_NAME="filmek-adatbazis"
-VERSION="10.0.0"
 ARCH="all"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+PACKAGE_NAME="$(
+    python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import PACKAGE_NAME; print(PACKAGE_NAME)"
+)"
+
+VERSION="$(
+    python3 -c "import sys; sys.path.insert(0, '$PROJECT_DIR/app'); from version_info import DEB_VERSION; print(DEB_VERSION)"
+)"
+
 
 BUILD_DIR="$SCRIPT_DIR/build"
 ROOT_DIR="$SCRIPT_DIR/root"
@@ -51,8 +58,11 @@ fi
 # Dokumentáció könyvtár
 mkdir -p "$PACKAGE_DIR/usr/share/doc/$PACKAGE_NAME"
 
-# DEBIAN/control
-cp "$SCRIPT_DIR/control" "$DEBIAN_DIR/control"
+# DEBIAN/control generálása
+sed \
+    -e "s/@PACKAGE_NAME@/$PACKAGE_NAME/g" \
+    -e "s/@VERSION@/$VERSION/g" \
+    "$SCRIPT_DIR/control.in" > "$DEBIAN_DIR/control"
 
 # Jogosultságok
 chmod 755 "$PACKAGE_DIR/usr/bin/$PACKAGE_NAME"
