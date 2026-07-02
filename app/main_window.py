@@ -56,6 +56,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from themes.theme_utils import apply_theme_from_settings
+from views.home_page import HomePage
 from views.list_view import ListViewWidget
 from views.movie_card import MovieCard
 from wizard.wizard import AddItemWizard
@@ -187,25 +188,8 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         root.addWidget(self.stack)
 
-        # Kezdőoldal (HTML)
-        self.home = QTextBrowser()
-        self.home.setHtml(
-            """
-            <h1>Filmek Adatbázis</h1>
-            <p>
-                Üdvözöl a helyi, offline film/sorozat katalógus.
-                Bal oldalt válaszd az „Adatbázis” lapot.
-            </p>
-            <ul>
-                <li><b>Fájl → Új</b>: új film/sorozat (vagy rész/évad) felvétele</li>
-                <li>
-                    <b>Adatok → Importálás/Exportálás</b>:
-                    teljes adatbázis mentése/helyreállítása
-                </li>
-                <li><b>Súgó</b>: témakörök, névjegy, változásnapló</li>
-            </ul>
-            """
-        )
+        # Kezdőoldal
+        self.home = HomePage(self.dbm, parent=self)
         self.stack.addWidget(self.home)
 
         # --- Adatbázis oldal ---
@@ -756,7 +740,7 @@ class MainWindow(QMainWindow):
                 sorted([k for k in row.keys() if "cover" in k.lower()]),
             )
 
-        from app.dialogs.details_dialog import open_details_dialog
+        from dialogs.details_dialog import open_details_dialog
         open_details_dialog(self, row)
 
 
