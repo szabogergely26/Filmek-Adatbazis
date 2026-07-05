@@ -675,7 +675,7 @@ class MainWindow(QMainWindow):
 
 
     # --- Dupla kattintás / jelzés a ListViewWidget-ből ---
-    def on_edit_item_from_list(self, item_id: int) -> None:
+    def on_edit_item_from_list(self, item_id: int) -> bool:
         LOGGER.debug("[MAIN editRequested] received id=%r", item_id)
 
         row = self.dbm.get_by_id(item_id)  # TELJES sor DB-ből
@@ -685,12 +685,14 @@ class MainWindow(QMainWindow):
                 "Szerkesztés",
                 "Nem található a kijelölt sor az adatbázisban.",
             )
-            return
+            return False
 
         dlg = EditDialog(self.dbm, row=row, parent=self)
         if dlg.exec():
             self.reload_data()
+            return True
 
+        return False
 
 
 

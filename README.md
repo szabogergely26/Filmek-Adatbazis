@@ -9,6 +9,16 @@ A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**.
 
 ---
 
+## További teendők:
+
+DetailsDialog gomblogika finomítása:
+  - Mentés: megjegyzés mentése + ablak bezárása
+  - Bezárás/Mégse: ablak bezárása mentés nélkül
+  - A jelenlegi automatikus mentés bezáráskor ne fusson
+
+
+---
+
 ## Fő funkciók
 
 - Filmek és sorozatok nyilvántartása.

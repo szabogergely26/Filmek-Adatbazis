@@ -748,11 +748,21 @@ class MovieCard(QFrame):
         return title
 
     def _load_cover_pixmap(self) -> QPixmap | None:
-        """Borító betöltése: először DB cover_path, fallback: COVER_DIR + slug."""
+        """
+        Borító betöltése kizárólag a DB-ben tárolt cover_path alapján.
+
+        Fontos:
+        Ne legyen cím-alapú fallback, mert ha a felhasználó eltávolítja
+        a borítót a rekordból, akkor a kártya ne találja meg újra
+        automatikusan a cover/<cím>.jpg fájlt.
+        """
         first = self.items[0] if self.items else {}
 
         cover_path = (
-            first.get("cover_path") or first.get("cover_file") or first.get("cover") or ""
+            first.get("cover_path")
+            or first.get("cover_file")
+            or first.get("cover")
+            or ""
         )
 
         resolved_cover_path = resolve_cover_path(cover_path)
@@ -761,14 +771,6 @@ class MovieCard(QFrame):
             pm = QPixmap(str(resolved_cover_path))
             if not pm.isNull():
                 return pm
-
-        slug = self._slug_from_title()
-        for ext in (".jpg", ".jpeg", ".png", ".webp"):
-            path = COVER_DIR / f"{slug}{ext}"
-            if path.is_file():
-                pm = QPixmap(str(path))
-                if not pm.isNull():
-                    return pm
 
         return None
 

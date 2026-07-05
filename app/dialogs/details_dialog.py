@@ -894,7 +894,27 @@ def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") 
 
     edit_cb = getattr(real_parent, "on_edit_item_from_list", None)
     if callable(edit_cb):
-        dlg.edit_requested.connect(edit_cb)
+
+        def handle_edit_requested(movie_id: int) -> None:
+            changed = edit_cb(movie_id)
+
+            if not changed:
+                return
+
+            dbm = getattr(real_parent, "dbm", None)
+            if dbm is None:
+                return
+
+            updated_movie = dbm.get_by_id(movie_id)
+            if not updated_movie:
+                return
+
+            updated_movie_copy = dict(updated_movie)
+            _enrich_movie_with_parts(real_parent, updated_movie_copy)
+
+            dlg._movie = updated_movie_copy
+            dlg._populate()
+        dlg.edit_requested.connect(handle_edit_requested)
 
     notes_cb = getattr(real_parent, "on_save_notes_from_details", None)
     if callable(notes_cb):
