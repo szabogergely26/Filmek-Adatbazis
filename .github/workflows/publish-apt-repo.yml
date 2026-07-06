@@ -39,7 +39,15 @@ jobs:
           apt-ftparchive packages pool > dists/stable/main/binary-all/Packages
           gzip -k -f dists/stable/main/binary-all/Packages
 
-          apt-ftparchive release dists/stable > dists/stable/Release
+           apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin="Filmek Adatbazis" \
+            -o APT::FTPArchive::Release::Label="Filmek Adatbazis" \
+            -o APT::FTPArchive::Release::Suite="stable" \
+            -o APT::FTPArchive::Release::Codename="stable" \
+            -o APT::FTPArchive::Release::Architectures="all" \
+            -o APT::FTPArchive::Release::Components="main" \
+            -o APT::FTPArchive::Release::Description="Filmek Adatbazis APT Repository" \
+            release dists/stable > dists/stable/Release
 
       - name: Import GPG key
         run: |
