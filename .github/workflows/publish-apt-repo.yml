@@ -27,6 +27,12 @@ jobs:
           chmod +x packaging/deb/build_deb.sh
           packaging/deb/build_deb.sh
 
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: filmek-adatbazis-deb
+          path: dist/filmek-adatbazis_*_all.deb
+
       - name: Prepare APT repository
         run: |
           mkdir -p apt-repo/pool/main/f/filmek-adatbazis
