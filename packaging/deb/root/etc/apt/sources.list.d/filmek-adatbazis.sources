@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://szabogergely26.github.io/filmek-adatbazis/
+Suites: stable
+Components: main
+Architectures: all
+Signed-By: /usr/share/keyrings/filmek-adatbazis-archive-keyring.gpg

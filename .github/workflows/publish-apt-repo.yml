@@ -1,0 +1,69 @@
+name: Build DEB and publish APT repo
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y dpkg-dev apt-utils gnupg
+
+      - name: Build DEB package
+        run: |
+          chmod +x packaging/deb/build_deb.sh
+          packaging/deb/build_deb.sh
+
+      - name: Prepare APT repository
+        run: |
+          mkdir -p apt-repo/pool/main/f/filmek-adatbazis
+          mkdir -p apt-repo/dists/stable/main/binary-all
+
+          cp dist/filmek-adatbazis_*_all.deb apt-repo/pool/main/f/filmek-adatbazis/
+
+          cd apt-repo
+
+          apt-ftparchive packages pool > dists/stable/main/binary-all/Packages
+          gzip -k -f dists/stable/main/binary-all/Packages
+
+          apt-ftparchive release dists/stable > dists/stable/Release
+
+      - name: Import GPG key
+        run: |
+          echo "$APT_GPG_PRIVATE_KEY" | gpg --batch --import
+        env:
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+
+      - name: Sign APT repository
+        run: |
+          cd apt-repo/dists/stable
+
+          gpg --batch --yes --armor \
+            --detach-sign \
+            --output Release.gpg \
+            Release
+
+          gpg --batch --yes --clearsign \
+            --output InRelease \
+            Release
+
+      - name: Publish GitHub Pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./apt-repo
+          force_orphan: true
