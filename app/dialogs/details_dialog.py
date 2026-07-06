@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
+    QMessageBox,
     QPushButton,
     QSizePolicy,
     QTabWidget,
@@ -540,6 +541,9 @@ class ModernDetailDialog(QDialog):
     def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._movie: Mapping[str, Any] = movie
+        self._notes_original = ""
+
+
 
         self.setModal(True)
         self.setObjectName("ModernDetailDialog")
@@ -644,7 +648,7 @@ class ModernDetailDialog(QDialog):
 
         self.btn_close = QPushButton("Bezárás", bottom)
         self.btn_close.setObjectName("detailsCloseButton")
-        self.btn_close.clicked.connect(self.reject)
+        self.btn_close.clicked.connect(self._on_close_clicked)
 
 
         bottom_lay.addWidget(self.btn_save_notes)
@@ -719,6 +723,8 @@ class ModernDetailDialog(QDialog):
         self.tabs.addTab(self.tab_audio, "Hang / felirat")
         self.tabs.addTab(self.tab_notes, "Megjegyzés")
         self.tabs.addTab(self.tab_tech, "Technikai adatok")
+
+        self._notes_original = self.tab_notes.get_notes_text()
 
 
         # Title bar
@@ -824,6 +830,21 @@ class ModernDetailDialog(QDialog):
 
 
 
+    def _current_notes_text(self) -> str:
+        if not hasattr(self, "tab_notes") or self.tab_notes is None:
+            return ""
+        return self.tab_notes.get_notes_text()
+
+
+    def _has_unsaved_changes(self) -> bool:
+        return self._current_notes_text() != self._notes_original
+
+
+    def _on_close_clicked(self) -> None:
+        self.reject()
+
+
+
     def _on_save_notes_clicked(self) -> None:
         movie_id = self._movie.get("id")
         if movie_id is None:
@@ -842,8 +863,29 @@ class ModernDetailDialog(QDialog):
         # Külső mentést kérünk (MainWindow / DB réteg)
         self.notes_save_requested.emit(mid, notes)
 
+        self._notes_original = notes
+        self.accept()
 
 
+
+
+    def reject(self) -> None:
+        if self._has_unsaved_changes():
+            reply = QMessageBox.warning(
+                self,
+                "Nem mentett módosítások",
+                (
+                    "Vannak nem mentett módosítások a megjegyzésben.\n\n"
+                    "Biztosan bezárod mentés nélkül?"
+                ),
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
+        super().reject()
 
 
 
