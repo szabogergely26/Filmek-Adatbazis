@@ -73,7 +73,24 @@ def load_stylesheet() -> str:
 
 
 
+def resolve_db_path() -> Path:
+    """
+    Visszaadja a hasznĂˇlandĂł adatbĂˇzis Ăştvonalat.
+    - Ha van elmentett Ă©s lĂ©tezĹ‘ db_path a QSettings-ben, azt hasznĂˇljuk.
+    - KĂĽlĂ¶nben visszaesĂĽnk a config.DB_PATH alapĂ©rtelmezettre.
+    """
+    settings = QSettings(APP_ORG, APP_NAME)
+    saved_path = settings.value("db_path", "", str)
 
+    if saved_path:
+        p = Path(saved_path)
+        if p.exists():
+            return p
+        LOGGER.warning(
+            "Elmentett db_path nem letezik: %s. Visszaesunk az alapertelmezettre.", saved_path
+        )
+
+    return DB_PATH
 
 
 
@@ -216,10 +233,6 @@ def migrate_schema_raw(path: str) -> None:
         con.commit()
 
 
-# 1) táblát biztosan létrehozzuk (üres DB esetén)
-ensure_schema_fresh(DB_PATH)
-# 2) későbbi bővítések pótlása
-migrate_schema_raw(DB_PATH)
 
 
 # --------- Sötét téma ---------
@@ -245,13 +258,20 @@ def setup_dark_theme(app: QApplication):
 def main() -> int:
     setup_logging()
 
+    db_path = resolve_db_path()
+    LOGGER.info("Hasznalt adatbazis: %s", db_path)
+
+    ensure_schema_fresh(db_path)
+    migrate_schema_raw(db_path)
+
+
     if not ensure_single_instance():
         print("Már fut a Filmek Adatbázis, új példány nem indul.")
         LOGGER.warning("Második példány próbált indulni, kilépünk.")
         return 0
 
     print(f"[BOOT] {APP_VERSION}")
-    LOGGER.info("Filmek %s indul. DB_PATH=%s", APP_VERSION, DB_PATH)
+    LOGGER.info("Filmek %s indul. DB_PATH=%s", APP_VERSION, db_path)
 
 
     app = QApplication(sys.argv)
@@ -273,7 +293,7 @@ def main() -> int:
     app.setWindowIcon(ic)
 
     # Egyetlen központi DB-példány az egész appnak
-    dbm = DatabaseManager(DB_PATH)
+    dbm = DatabaseManager(db_path)
 
     win = MainWindow(dbm)
     win.show()
