@@ -1,4 +1,6 @@
 # db.py — egységes DatabaseManager a 'movies' táblához
+# - db_path kulcs törléshez:
+# python -c "from PySide6.QtCore import QSettings; s = QSettings('Filmekadatbazis', 'FilmekAdatbazis'); s.remove('db_path'); s.sync(); print('torolve')"
 
 import json
 import logging

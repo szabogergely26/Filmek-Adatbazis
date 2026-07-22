@@ -26,6 +26,7 @@ from PySide6.QtWidgets import QApplication
 
 # Themes:
 from themes.theme_utils import apply_theme_from_settings
+from wizard.first_run_wizard import FirstRunWizard
 
 # -- Importok vége -----
 
@@ -258,21 +259,12 @@ def setup_dark_theme(app: QApplication):
 def main() -> int:
     setup_logging()
 
-    db_path = resolve_db_path()
-    LOGGER.info("Hasznalt adatbazis: %s", db_path)
-
-    ensure_schema_fresh(db_path)
-    migrate_schema_raw(db_path)
-
-
     if not ensure_single_instance():
         print("Már fut a Filmek Adatbázis, új példány nem indul.")
         LOGGER.warning("Második példány próbált indulni, kilépünk.")
         return 0
 
     print(f"[BOOT] {APP_VERSION}")
-    LOGGER.info("Filmek %s indul. DB_PATH=%s", APP_VERSION, db_path)
-
 
     app = QApplication(sys.argv)
 
@@ -281,6 +273,39 @@ def main() -> int:
 
     # app név
     app.setApplicationName(APP_NAME)
+
+    # --- Első indítás ellenőrzése ---
+    settings = QSettings(APP_ORG, APP_NAME)
+    saved_db_path = settings.value("db_path", "", str)
+
+    db_path: Path | None = None
+
+    if not saved_db_path:
+        LOGGER.info("Nincs mentett db_path, elso inditas varazslo indul.")
+        wizard = FirstRunWizard(DB_PATH)
+        if wizard.exec():
+            chosen = wizard.chosen_db_path()
+            if chosen:
+                settings.setValue("db_path", chosen)
+                settings.sync()
+                LOGGER.info("First run wizard: db_path elmentve: %s", chosen)
+                db_path = Path(chosen)
+
+        else:
+            LOGGER.info("Első indítás Varázsló megszakítva. Kilépés...")
+            return 0
+
+
+    if db_path is None:
+        db_path = resolve_db_path()
+
+    LOGGER.info("Hasznalt adatbazis: %s", db_path)
+
+    ensure_schema_fresh(db_path)
+    migrate_schema_raw(db_path)
+
+
+
 
    # Téma alkalmazása a beállítások alapján
     apply_theme_from_settings(app)
