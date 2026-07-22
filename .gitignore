@@ -30,6 +30,7 @@ logs/
 *.sqlite
 *.sqlite3
 *.bak
+cover/
 
 # -------------------------
 # Build / packaging
@@ -61,20 +62,6 @@ Thumbs.db
 # Local user settings
 # -------------------------
 settings.json
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ruff-report*.txt
