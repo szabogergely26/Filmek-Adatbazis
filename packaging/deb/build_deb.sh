@@ -3,7 +3,6 @@ set -euo pipefail
 
 PACKAGE_NAME="filmek-adatbazis"
 VERSION="10.0.0"
-ARCH="all"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -64,7 +63,9 @@ find "$PACKAGE_DIR" -type f -name "*.pyc" -delete
 find "$PACKAGE_DIR" -type f -name "*.pyo" -delete
 
 # Csomag építése
-OUTPUT_FILE="$DIST_DIR/${PACKAGE_NAME}_${VERSION}_${ARCH}.deb"
+# A kimeneti fájl MINDIG fix nevű, verziószám nélkül,
+# hogy a weboldali/APT letöltési linket soha ne kelljen módosítani.
+OUTPUT_FILE="$DIST_DIR/${PACKAGE_NAME}.deb"
 
 
 dpkg-deb --root-owner-group --build "$PACKAGE_DIR" "$OUTPUT_FILE"
