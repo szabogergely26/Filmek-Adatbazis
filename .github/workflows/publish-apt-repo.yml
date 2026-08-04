@@ -31,14 +31,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: filmek-adatbazis-deb
-          path: dist/filmek-adatbazis_*_all.deb
+          path: dist/filmek-adatbazis.deb
 
       - name: Prepare APT repository
         run: |
           mkdir -p apt-repo/pool/main/f/filmek-adatbazis
           mkdir -p apt-repo/dists/stable/main/binary-all
 
-          cp dist/filmek-adatbazis_*_all.deb apt-repo/pool/main/f/filmek-adatbazis/
+          cp dist/filmek-adatbazis.deb apt-repo/pool/main/f/filmek-adatbazis/
 
           cd apt-repo
 

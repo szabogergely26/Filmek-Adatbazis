@@ -9,7 +9,7 @@ A program célja, hogy a saját filmek, sorozatok, részek, évadok, tárhelyek,
 > készült, emberi tervezés, irányítás és folyamatos ellenőrzés mellett. A
 > funkcionalitásért és a projekt irányáért a szerző felel.
 
-A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**.
+A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**
 
 ---
 
