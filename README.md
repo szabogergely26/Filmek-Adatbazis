@@ -5,7 +5,11 @@
 **Filmek Adatbázis** egy helyi, offline használatra készült film- és sorozatkatalógus alkalmazás.
 A program célja, hogy a saját filmek, sorozatok, részek, évadok, tárhelyek, formátumok és kiegészítő adatok áttekinthetően kezelhetők legyenek egy asztali grafikus felületen.
 
-A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**.
+> **Megjegyzés az AI-közreműködésről:** A kód nagy része AI (Claude) segítségével
+> készült, emberi tervezés, irányítás és folyamatos ellenőrzés mellett. A
+> funkcionalitásért és a projekt irányáért a szerző felel.
+
+A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**
 
 ---
 
