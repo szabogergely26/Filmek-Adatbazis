@@ -26,6 +26,7 @@ from PySide6.QtWidgets import QApplication
 
 # Themes:
 from themes.theme_utils import apply_theme_from_settings
+from wizard.first_run_wizard import FirstRunWizard
 
 # -- Importok vége -----
 
@@ -73,7 +74,24 @@ def load_stylesheet() -> str:
 
 
 
+def resolve_db_path() -> Path:
+    """
+    Visszaadja a hasznĂˇlandĂł adatbĂˇzis Ăştvonalat.
+    - Ha van elmentett Ă©s lĂ©tezĹ‘ db_path a QSettings-ben, azt hasznĂˇljuk.
+    - KĂĽlĂ¶nben visszaesĂĽnk a config.DB_PATH alapĂ©rtelmezettre.
+    """
+    settings = QSettings(APP_ORG, APP_NAME)
+    saved_path = settings.value("db_path", "", str)
 
+    if saved_path:
+        p = Path(saved_path)
+        if p.exists():
+            return p
+        LOGGER.warning(
+            "Elmentett db_path nem letezik: %s. Visszaesunk az alapertelmezettre.", saved_path
+        )
+
+    return DB_PATH
 
 
 
@@ -216,10 +234,6 @@ def migrate_schema_raw(path: str) -> None:
         con.commit()
 
 
-# 1) táblát biztosan létrehozzuk (üres DB esetén)
-ensure_schema_fresh(DB_PATH)
-# 2) későbbi bővítések pótlása
-migrate_schema_raw(DB_PATH)
 
 
 # --------- Sötét téma ---------
@@ -251,8 +265,6 @@ def main() -> int:
         return 0
 
     print(f"[BOOT] {APP_VERSION}")
-    LOGGER.info("Filmek %s indul. DB_PATH=%s", APP_VERSION, DB_PATH)
-
 
     app = QApplication(sys.argv)
 
@@ -261,6 +273,39 @@ def main() -> int:
 
     # app név
     app.setApplicationName(APP_NAME)
+
+    # --- Első indítás ellenőrzése ---
+    settings = QSettings(APP_ORG, APP_NAME)
+    saved_db_path = settings.value("db_path", "", str)
+
+    db_path: Path | None = None
+
+    if not saved_db_path:
+        LOGGER.info("Nincs mentett db_path, elso inditas varazslo indul.")
+        wizard = FirstRunWizard(DB_PATH)
+        if wizard.exec():
+            chosen = wizard.chosen_db_path()
+            if chosen:
+                settings.setValue("db_path", chosen)
+                settings.sync()
+                LOGGER.info("First run wizard: db_path elmentve: %s", chosen)
+                db_path = Path(chosen)
+
+        else:
+            LOGGER.info("Első indítás Varázsló megszakítva. Kilépés...")
+            return 0
+
+
+    if db_path is None:
+        db_path = resolve_db_path()
+
+    LOGGER.info("Hasznalt adatbazis: %s", db_path)
+
+    ensure_schema_fresh(db_path)
+    migrate_schema_raw(db_path)
+
+
+
 
    # Téma alkalmazása a beállítások alapján
     apply_theme_from_settings(app)
@@ -273,7 +318,7 @@ def main() -> int:
     app.setWindowIcon(ic)
 
     # Egyetlen központi DB-példány az egész appnak
-    dbm = DatabaseManager(DB_PATH)
+    dbm = DatabaseManager(db_path)
 
     win = MainWindow(dbm)
     win.show()
