@@ -11,15 +11,34 @@ A program célja, hogy a saját filmek, sorozatok, részek, évadok, tárhelyek,
 
 A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**
 
+## Első indítás varázsló (First Run Wizard)
+
+Az alkalmazás induláskor a `main.py`-ban a `resolve_db_path()` függvénnyel ellenőrzi,
+van-e érvényes `db_path` elmentve a QSettings-ben (org: `Filmekadatbazis`, app: `FilmekAdatbazis`):
+
+- **Ha van és a fájl létezik** → az app azt az adatbázist tölti be, a varázsló nem jelenik meg.
+- **Ha nincs, vagy a mentett fájl már nem létezik** → elindul a First Run Wizard
+  (`wizard/first_run_wizard.py`), ami felajánlja:
+  - **Új üres adatbázis létrehozása** — friss séma jön létre az app adatkönyvtárában
+    (`APP_DATA_DIR`, lásd `config.py`)
+  - **Meglévő adatbázis megnyitása** — a kiválasztott fájl bemásolódik (`shutil.copy2`)
+    az app saját adatkönyvtárába, nem in-place referenciaként használjuk
+
+A varázsló manuális újraindításához (pl. teszteléshez) töröld a `db_path` bejegyzést
+a QSettings-ből:
+
+- **Linux**: `~/.config/Filmekadatbazis/FilmekAdatbazis.conf`
+- **Windows**: registry `HKEY_CURRENT_USER\Software\Filmekadatbazis\FilmekAdatbazis`
+
 ---
 
-## További teendők:
+## További teendők
 
 DetailsDialog gomblogika finomítása:
-  - Mentés: megjegyzés mentése + ablak bezárása
-  - Bezárás/Mégse: ablak bezárása mentés nélkül
-  - A jelenlegi automatikus mentés bezáráskor ne fusson
 
+- Mentés: megjegyzés mentése + ablak bezárása
+- Bezárás/Mégse: ablak bezárása mentés nélkül
+- A jelenlegi automatikus mentés bezáráskor ne fusson
 
 ---
 

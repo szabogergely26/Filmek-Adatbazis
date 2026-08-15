@@ -81,3 +81,15 @@ jobs:
           publish_branch: gh-pages
           publish_dir: ./apt-repo
           force_orphan: true
+
+
+
+      - name: Publish GitHub Release (rolling)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: "Filmek-Adatbázis (legfrissebb build)"
+          files: dist/filmek-adatbazis.deb
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
