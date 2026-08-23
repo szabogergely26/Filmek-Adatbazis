@@ -82,14 +82,6 @@ Már rendben van:
 - Alkalmazás fejlesztői módban futtatható.
 - Projektstruktúra nagyjából szét van választva modulokra.
 
-Még nincs kész:
-
-- Debian `.deb` csomag.
-- Frissíthető APT szoftverforrás.
-- GitHub Actions alapú DEB build.
-- Stabil telepített adatkönyvtár-logika teljes leválasztása a fejlesztői projektkönyvtárról.
-- Windows build / installer.
-
 ---
 
 ## Technológia
@@ -112,6 +104,8 @@ shiboken6==6.10.2
 ---
 
 ## Fejlesztői futtatás
+
+**VS Code-ból futtatva mindig a Projects könyvtárba lévő adatbázist használja**
 
 ### 1. Virtuális környezet létrehozása
 
