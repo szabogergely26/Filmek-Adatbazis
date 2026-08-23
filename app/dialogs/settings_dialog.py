@@ -16,23 +16,18 @@ Osztályok 1: class SettingsDialog(QDialog)
 
 from __future__ import annotations
 
-import os
-
 from config import APP_NAME, APP_ORG
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QSettings, Qt
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDialog,
     QDialogButtonBox,
-    QFileDialog,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
     QListWidget,
-    QPushButton,
     QRadioButton,
     QStackedWidget,
     QVBoxLayout,
@@ -93,10 +88,10 @@ class SettingsDialog(QDialog):
         self._page_logging = QWidget()
         self._page_developer = QWidget()
 
-        self._stack.addWidget(self._page_general)      # index 0
-        self._stack.addWidget(self._page_appearance)   # index 1
-        self._stack.addWidget(self._page_logging)      # index 2
-        self._stack.addWidget(self._page_developer)    # index 3
+        self._stack.addWidget(self._page_general)  # index 0
+        self._stack.addWidget(self._page_appearance)  # index 1
+        self._stack.addWidget(self._page_logging)  # index 2
+        self._stack.addWidget(self._page_developer)  # index 3
 
         # Oldalak UI-jának felépítése
         self._build_general_page()
@@ -129,33 +124,16 @@ class SettingsDialog(QDialog):
         form = QFormLayout()
         layout.addLayout(form)
 
-        # Adatbázis elérési útja
-        db_layout = QHBoxLayout()
-        self.edt_db_path = QLineEdit(self._page_general)
-        if self._default_db_path:
-            self.edt_db_path.setPlaceholderText(self._default_db_path)
-        btn_browse_db = QPushButton("Tallózás…", self._page_general)
-        btn_browse_db.clicked.connect(self._browse_db_path)
+        # Adatbázis elérési útja (csak megjelenítés – Linuxon a DB helyét
+        # mindig a fix IS_INSTALLED logika dönti el, lásd config.py.
+        # A felhasználó itt nem módosíthatja, csak látja, hol van.)
+        self.lbl_db_path = QLabel(self._page_general)
+        self.lbl_db_path.setWordWrap(True)
+        self.lbl_db_path.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
-        db_layout.addWidget(self.edt_db_path)
-        db_layout.addWidget(btn_browse_db)
-
-        form.addRow("Adatbázis helye:", db_layout)
+        form.addRow("Adatbázis helye:", self.lbl_db_path)
 
         layout.addStretch(1)
-
-    def _browse_db_path(self) -> None:
-        current = self.edt_db_path.text().strip()
-        start_dir = os.path.dirname(current) if current else os.path.expanduser("~")
-
-        file_path, _ = QFileDialog.getOpenFileName(
-            self,
-            "Adatbázis fájl kiválasztása",
-            start_dir,
-            "SQLite adatbázisok (*.db *.sqlite *.sqlite3);;Minden fájl (*.*)",
-        )
-        if file_path:
-            self.edt_db_path.setText(file_path)
 
     # ------------------------------------------------------------------
     # 2. oldal: Megjelenítés
@@ -203,19 +181,14 @@ class SettingsDialog(QDialog):
             cards_group,
         )
         self.chk_hover_effect.setToolTip(
-
-                "Ha be van kapcsolva, a kártyák és a lista-sorok finom, "
-                "3D-s kiemelést kapnak egér fölé húzáskor."
-
+            "Ha be van kapcsolva, a kártyák és a lista-sorok finom, "
+            "3D-s kiemelést kapnak egér fölé húzáskor."
         )
         cards_layout.addWidget(self.chk_hover_effect)
 
         layout.addWidget(cards_group)
 
         layout.addStretch(1)
-
-
-
 
     # ------------------------------------------------------------------
     # 3. oldal: Naplózás
@@ -335,10 +308,14 @@ class SettingsDialog(QDialog):
     def _load_settings(self) -> None:
         s = self._settings
 
-        # --- Általános: adatbázis elérési útja ---
-        db_path = s.value("db_path", "", str)
-        if isinstance(db_path, str) and db_path:
-            self.edt_db_path.setText(db_path)
+        # --- Általános: adatbázis elérési útja (csak megjelenítés) ---
+        # Mindig a ténylegesen használt útvonalat mutatjuk (config.DB_PATH),
+        # nem a QSettings-be esetleg korábban beírt, ténylegesen soha nem
+        # használt értéket – Linuxon ezt a IS_INSTALLED logika dönti el.
+        if self._default_db_path:
+            self.lbl_db_path.setText(self._default_db_path)
+        else:
+            self.lbl_db_path.setText("(ismeretlen)")
 
         # --- Megjelenítés: téma + nézet + borító a kártyán ---
 
@@ -413,22 +390,11 @@ class SettingsDialog(QDialog):
         hover_enabled = s.value("ui/hover_effect_enabled", True, bool)
         self.chk_hover_effect.setChecked(hover_enabled)
 
-
-
-
-
-
-
-
-
-
     def _save_settings(self) -> None:
         s = self._settings
 
-        # Adatbázis elérési útja
-        db_path = self.edt_db_path.text().strip()
-        if db_path:
-            s.setValue("db_path", db_path)
+        # Adatbázis elérési útja: nem szerkeszthető, nincs mit menteni.
+        # (Linuxon a DB helyét a config.py IS_INSTALLED logikája dönti el.)
 
         # Téma
         theme = "modern" if self.rb_theme_modern.isChecked() else "standard"
@@ -468,9 +434,6 @@ class SettingsDialog(QDialog):
 
         # Biztonság kedvéért flush
         s.sync()
-
-
-
 
     # ------------------------------------------------------------------
     # OK gomb kezelése
