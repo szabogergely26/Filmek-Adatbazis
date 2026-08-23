@@ -49,12 +49,12 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QStackedWidget,
-    QTextBrowser,
     QToolBar,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
+from PySide6.QtWebEngineWidgets import QWebEngineView
 from themes.theme_utils import apply_theme_from_settings
 from views.home_page import HomePage
 from views.list_view import ListViewWidget
@@ -1122,8 +1122,8 @@ class MainWindow(QMainWindow):
         dlg.setWindowTitle("Súgó – Témakörök")
         dlg.resize(800, 560)
         v = QVBoxLayout(dlg)
-        tb = QTextBrowser()
-        tb.setHtml(
+        web = QWebEngineView()
+        web.setHtml(
             """
             <h2>Témakörök</h2>
             <ul>
@@ -1151,7 +1151,7 @@ class MainWindow(QMainWindow):
             </ul>
             """
         )
-        v.addWidget(tb)
+        v.addWidget(web)
         okb = QDialogButtonBox(QDialogButtonBox.Ok)
         okb.accepted.connect(dlg.accept)
         v.addWidget(okb)
@@ -1164,8 +1164,8 @@ class MainWindow(QMainWindow):
         dlg.setWindowTitle("Névjegy")
         dlg.resize(420, 300)
         v = QVBoxLayout(dlg)
-        tb = QTextBrowser()
-        tb.setHtml(
+        web = QWebEngineView()
+        web.setHtml(
             f"""
             <h2>{APP_NAME}</h2>
             <p>Helyi, offline Python/PySide6 alkalmazás.</p>
@@ -1174,7 +1174,7 @@ class MainWindow(QMainWindow):
             <p>Adatbázis: <code>{DB_PATH}</code></p>
             """
         )
-        v.addWidget(tb)
+        v.addWidget(web)
         okb = QDialogButtonBox(QDialogButtonBox.Ok)
         okb.accepted.connect(dlg.accept)
         v.addWidget(okb)
@@ -1186,7 +1186,7 @@ class MainWindow(QMainWindow):
         dlg.resize(720, 560)
 
         v = QVBoxLayout(dlg)
-        tb = QTextBrowser()
+        web = QWebEngineView()
 
         # changelog.html betöltése a modul mappájából
         try:
@@ -1199,8 +1199,8 @@ class MainWindow(QMainWindow):
         except Exception as e:
             html = f"<h1>Változásnapló</h1><p>Hiba: <code>{e!r}</code></p>"
 
-        tb.setHtml(html)
-        v.addWidget(tb)
+        web.setHtml(html)
+        v.addWidget(web)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Close)
         buttons.rejected.connect(dlg.reject)

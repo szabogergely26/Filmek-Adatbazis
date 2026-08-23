@@ -35,6 +35,49 @@
 <h1>Változásnapló</h1>
 
 <section class="ver">
+
+    <h2>Verzió 10.1.0 — 2026-08-23</h2>
+    <ul>
+        <li><b>Új funkció:</b> keresőmezőhöz tárolási hely (storage location) szűrés — a keresés mostantól
+            részleges egyezés (substring) alapján figyelembe veszi azt is, hogy a film/sorozat melyik
+            tárolási helyen található.</li>
+        <li><b>Új funkció:</b> sárga figyelmeztető sáv (<code>warningBanner</code>) jelenik meg a
+            találati listában, ha egy elemnek több példánya van különböző tárolási helyeken, és a
+            keresési feltételnek csak egy részük felel meg (pl. egy film <code>/Multimédia</code> és
+            <code>3TB</code> tárolón is megvan, de csak az egyik egyezik a keresett hellyel).
+        </li>
+        <li><b>Javítás:</b> borítókép-kezelés rendberakva — új <code>ensure_cover_in_dir()</code>
+            függvény a <code>config.py</code>-ban, amely a kiválasztott borítóképet csak a végleges
+            mentéskor (varázsló "Befejez" gomb vagy <code>EditDialog</code> "Mentés") másolja be az
+            alkalmazás <code>cover/</code> mappájába, névütközés esetén számozott utótaggal; böngészéskor
+            és megszakításkor nem történik másolás.</li>
+        <li><b>Javítás:</b> <code>EditDialog._on_clear_cover()</code> mostantól rákérdez
+            <code>QMessageBox</code>-szal, hogy a borítóképet a lemezről is törölni kell-e.
+        </li>
+        <li><b>Javítás:</b> Beállítások dialógus "Adatbázis helye" mezője read-only <code>QLabel</code>-re
+            cserélve, amely a ténylegesen használt <code>config.DB_PATH</code>-t mutatja; a megtévesztő
+            <code>QFileDialog</code> tallózó gomb és a nem használt <code>QSettings</code> db_path írás
+            eltávolítva — összhangban a Linux XDG-konvenciókkal.
+        </li>
+        <li><b>UX:</b> "Kis türelmet…" állapotjelzés bevezetve a <code>DetailsDialog</code>-ban és a
+            <code>MainWindow</code>-ban (<code>show_refresh_status()</code> / <code>hide_refresh_status()</code>),
+            minimum 5 másodperces látszási idővel, hogy a kártyalista-újraépítés alatt a felhasználó
+            lássa, hogy folyamatban van a frissítés.
+        </li>
+        <li><b>Refaktor:</b> az összes inline <code>setStyleSheet()</code> hívás kiszervezve a
+            <code>style.css</code>-be, <code>objectName</code> szelektorokkal (<code>#refreshStatusBanner</code>,
+            <code>#warningBanner</code>, <code>#pageTitle</code>).
+        </li>
+        <li><b>Fejlesztői folyamat:</b> <code>VERSIONING.md</code> hozzáadva a projekt gyökeréhez, rögzítve
+            a szemantikus verziószámozás szabályait (MAJOR.MINOR.PATCH, mindig nullázódó patch minor-emeléskor).</li>
+        <li><b>Rendrakás:</b> <code>windows_build.md</code> áthelyezve a <code>docs/</code> mappába, hogy ne
+            jelenjen meg önálló tab-ként a GitHub repo főoldalán.</li>
+    </ul>
+</section>
+
+
+
+<section class="ver">
     <h2>10.0.1 — 2026-08-23</h2>
     <ul>
         <li><b>Javítás:</b> DB_PATH kettősség megszüntetve — eddig a <code>config.py</code> alapértéke és a
@@ -66,36 +109,28 @@
         <li>Új: kapcsolható naplózás (konzol/fájl)</li>
         <li>logfájl megnyitása külön ablakban (Súgó → Log)</li>
 
-    </ul>
+        <li style="margin-top: .8em;">
+            <span style="font-size: 16px; font-weight: bold;">
+                Javítások:
+            </span>
+        </li>
 
-    <li style="margin-top: .8em;">
-        <span style="font-size: 16px; font-weight: bold;">
-            Javítások:
-        </span>
-    </li>
+        <li><b>kártyaelrendezés kisebb ablaknál</b></li>
 
-    <li><b>kártyaelrendezés kisebb ablaknál</b> </li>
+        <li style="margin-top: .8em;">
+            <span style="font-size: 16px; font-weight: bold;">
+                Tervezett funkciók (ötletek időpontjai)
+            </span>
+        </li>
 
+        <li>
+            Tervezés: részletek nézet lenyíló változata (kapcsolható:
+            <code>FORCE_LEGACY_DETAILS</code>) — 2025.11.14
+        </li>
 
-
-
-
-
-
-    <li style="margin-top: .8em;">
-        <span style="font-size: 16px; font-weight: bold;">
-            Tervezett funkciók (ötletek időpontjai)
-        </span>
-    </li>
-
-    <li>
-        Tervezés: részletek nézet lenyíló változata (kapcsolható:
-        <code>FORCE_LEGACY_DETAILS</code>) — 2025.11.14
-    </li>
-
-    <li>
-        Tervezés: varázsló „Új felvétele” módja gyors többszörös adatbevitelhez — 2025.11.15
-    </li>
+        <li>
+            Tervezés: varázsló „Új felvétele” módja gyors többszörös adatbevitelhez — 2025.11.15
+        </li>
     </ul>
 </section>
 
