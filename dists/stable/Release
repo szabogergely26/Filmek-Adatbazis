@@ -1,0 +1,24 @@
+Architectures: all
+Codename: stable
+Components: main
+Date: Sun, 23 Aug 2026 16:07:32 +0000
+Description: Filmek Adatbazis APT Repository
+Label: Filmek Adatbazis
+Origin: Filmek Adatbazis
+Suite: stable
+MD5Sum:
+ 145eea938486285e57520c9cfa948393              199 Release
+ 79f6debaae98c8fec0e48fdf46c91b86              873 main/binary-all/Packages
+ d978ed31d5228bf0d0a9ca232955434f              588 main/binary-all/Packages.gz
+SHA1:
+ 69ee17fb160d6221260e796daa70d936f3fc987b              199 Release
+ dd6519613aedbe9540c94c1c4961d7d929326147              873 main/binary-all/Packages
+ 54a27ad787ecf13fea35ef9c48a230532dab0b2e              588 main/binary-all/Packages.gz
+SHA256:
+ b31d80baa5479189c214afce702de8de36bc84cc0cc8b1bc3fc42d4e280d26aa              199 Release
+ 3ceb992ed4dc9fad7685c360e1d5594787c88c8f405c47d556d84f3f059199ba              873 main/binary-all/Packages
+ 7062d3f3d97d1ae18c484b14a0898909e336c02e8dab2722e935cd2398653b5e              588 main/binary-all/Packages.gz
+SHA512:
+ 697c412f5ad7507d2bcd19fa441f9572a57bed97886dc250d3bfa4680744e8f33bdfa5c35bb45e67dbca9cc58e017935437974965e6d9853d812d6998d4d2fb7              199 Release
+ 0b7a51a4da1a906e3f10acc90be256b505635f50b93ce8ca53478ab2f423b3102d3945ccc43270f72965ff4007380bbad0225f303fbdbbdf0d4893376eae3767              873 main/binary-all/Packages
+ a79edfdafde581c32649cf8e8ad00e986487aac968b2aa9232d0e77b7e36adefce983a12183057fc52032ce8a5dbbd0d0a8ae28df63b9ebd499e161ef5f2ac69              588 main/binary-all/Packages.gz

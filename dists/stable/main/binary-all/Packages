@@ -1,0 +1,18 @@
+Package: filmek-adatbazis
+Architecture: all
+Version: 10.1.1
+Priority: optional
+Section: utils
+Maintainer: Szabó Gergely <szabogergely26@gmail.com>
+Depends: python3, python3-pyside6.qtcore, python3-pyside6.qtgui, python3-pyside6.qtwidgets, python3-pyside6.qtwebenginewidgets
+Filename: pool/main/f/filmek-adatbazis/filmek-adatbazis.deb
+Size: 26814512
+MD5sum: 685ebfa4d1564d38fe1a48ff0670a7c6
+SHA1: 5a03d9ea88429445c2d5989c6b6d55975b001028
+SHA256: f880cf8e0428fb1e18c640299441b222417bd467140e255cf4ad45a7ea5b4b1a
+SHA512: 07f14a0952133f3bf8613a991da173e7430642dc61c4b0dd185e920088cd2ef9610a50ca9b7969cf5369c367dfa1911238f41ce36dcc597920d336da447047f4
+Description: Offline film- és sorozat-adatbázis
+ Filmek és sorozatok offline nyilvántartására szolgáló PySide6 alkalmazás.
+ .
+ Az alkalmazás helyi adatbázist használ, és internetkapcsolat nélkül is működik.
+
