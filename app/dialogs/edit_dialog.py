@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from config import normalize_cover_path, resolve_cover_path
+from config import COVER_DIR, ensure_cover_in_dir, resolve_cover_path
 from db import DatabaseManager
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -33,6 +33,7 @@ from PySide6.QtWidgets import (
 
 #  ----- Segédfüggvények:
 
+
 def parse_first_int(text: str) -> int | None:
     """
     Szövegből kinyeri az első előforduló egész számot.
@@ -49,17 +50,6 @@ def parse_first_int(text: str) -> int | None:
         return int(m.group(0))
     except ValueError:
         return None
-
-
-
-
-
-
-
-
-
-
-
 
 
 class EditDialog(QDialog):
@@ -109,49 +99,31 @@ class EditDialog(QDialog):
             self.title_edit.setReadOnly(True)
 
         self.part_edit = QLineEdit(
-            ""
-            if not self.row or self.row.get("part") is None
-            else str(self.row.get("part"))
+            "" if not self.row or self.row.get("part") is None else str(self.row.get("part"))
         )
         self.year_edit = QLineEdit(
-            ""
-            if not self.row or self.row.get("year") is None
-            else str(self.row.get("year"))
+            "" if not self.row or self.row.get("year") is None else str(self.row.get("year"))
         )
         self.episode_title_edit = QLineEdit(
             "" if not self.row else (self.row.get("episode_title") or "")
         )
-        self.genre_edit = QLineEdit(
-            "" if not self.row else (self.row.get("genre") or "")
-        )
-        self.duration_edit = QLineEdit(
-            "" if not self.row else (self.row.get("duration") or "")
-        )
+        self.genre_edit = QLineEdit("" if not self.row else (self.row.get("genre") or ""))
+        self.duration_edit = QLineEdit("" if not self.row else (self.row.get("duration") or ""))
         self.size_edit = QLineEdit("" if not self.row else (self.row.get("size") or ""))
         self.storage_edit = QLineEdit(
             "" if not self.row else (self.row.get("storage_location") or "")
         )
-        self.fmt_type_edit = QLineEdit(
-            "" if not self.row else (self.row.get("format_type") or "")
-        )
-        self.fmt_edit = QLineEdit(
-            "" if not self.row else (self.row.get("format") or "")
-        )
-        self.ed_audio = QLineEdit(
-            "" if not self.row else (self.row.get("audio_tracks") or "")
-        )
-        self.ed_subs = QLineEdit(
-            "" if not self.row else (self.row.get("subtitle_tracks") or "")
-        )
+        self.fmt_type_edit = QLineEdit("" if not self.row else (self.row.get("format_type") or ""))
+        self.fmt_edit = QLineEdit("" if not self.row else (self.row.get("format") or ""))
+        self.ed_audio = QLineEdit("" if not self.row else (self.row.get("audio_tracks") or ""))
+        self.ed_subs = QLineEdit("" if not self.row else (self.row.get("subtitle_tracks") or ""))
 
         # --- meglévő mezők ugyanabban a sorrendben ---
         form.addRow("Hangsáv(ok):", self.ed_audio)
         form.addRow("Felirat(ok):", self.ed_subs)
 
         # Online szolgáltató
-        self.ed_provider = QLineEdit(
-            "" if not self.row else (self.row.get("provider") or "")
-        )
+        self.ed_provider = QLineEdit("" if not self.row else (self.row.get("provider") or ""))
         form.addRow("Szolgáltató (online):", self.ed_provider)
 
         form.addRow("Típus:", self.type_cb)
@@ -187,11 +159,7 @@ class EditDialog(QDialog):
         form.addRow("Időszakos:", seasonal_layout)
 
         # Meglévő rekord esetén beolvassuk a DB-ből a seasonal_type mezőt
-        seasonal_type = (
-            (self.row.get("seasonal_type") or "none").lower()
-            if self.row
-            else "none"
-        )
+        seasonal_type = (self.row.get("seasonal_type") or "none").lower() if self.row else "none"
         self._set_seasonal_type_to_ui(seasonal_type)
 
         # --- ScrollArea a komplett form-ra ---
@@ -205,23 +173,16 @@ class EditDialog(QDialog):
         btns.accepted.connect(self.save)
         btns.rejected.connect(self.reject)
 
-         # Feliratok magyarosítása
+        # Feliratok magyarosítása
         ok_btn = btns.button(QDialogButtonBox.Ok)
         if ok_btn is not None:
-            ok_btn.setText("OK")          # vagy "Mentés", ha azt jobban szeretnéd
+            ok_btn.setText("OK")  # vagy "Mentés", ha azt jobban szeretnéd
 
         cancel_btn = btns.button(QDialogButtonBox.Cancel)
         if cancel_btn is not None:
             cancel_btn.setText("Mégse")
 
-
         main_layout.addWidget(btns)
-
-
-
-
-
-
 
     # === BORÍTÓKÉP RÉSZ ===
 
@@ -269,6 +230,31 @@ class EditDialog(QDialog):
         self._update_cover_preview()
 
     def _on_clear_cover(self) -> None:
+        current_path = self._cover_path
+
+        if current_path:
+            resolved = resolve_cover_path(current_path)
+            if resolved and resolved.is_file():
+                in_cover_dir = resolved.resolve().is_relative_to(COVER_DIR.resolve())
+
+                if in_cover_dir:
+                    answer = QMessageBox.question(
+                        self,
+                        "Borítókép törlése",
+                        f"A képet a lemezről is törli?\n\n{resolved.name}",
+                        QMessageBox.Yes | QMessageBox.No,
+                        QMessageBox.No,
+                    )
+                    if answer == QMessageBox.Yes:
+                        try:
+                            resolved.unlink()
+                        except OSError:
+                            QMessageBox.warning(
+                                self,
+                                "Hiba",
+                                f"A fájl törlése nem sikerült:\n{resolved}",
+                            )
+
         self._cover_path = None
         self._update_cover_preview()
 
@@ -307,7 +293,6 @@ class EditDialog(QDialog):
             self.chk_christmas.setChecked(True)
             self.chk_newyear.setChecked(True)
 
-
     def _get_seasonal_type_from_ui(self) -> str:
         christmas = self.chk_christmas.isChecked()
         newyear = self.chk_newyear.isChecked()
@@ -319,10 +304,6 @@ class EditDialog(QDialog):
         if newyear:
             return "szilveszteri"
         return "none"
-
-
-
-
 
     def save(self) -> None:
         seasonal_type = self._get_seasonal_type_from_ui()
@@ -349,7 +330,7 @@ class EditDialog(QDialog):
 
         # --- Opcionális: borítókép mentése, ha a régi row-ban már volt ilyen mező ---
         if self.row is not None and "cover_path" in self.row:
-            row["cover_path"] = normalize_cover_path(self._cover_path)
+            row["cover_path"] = ensure_cover_in_dir(self._cover_path)
         if not row["title"]:
             QMessageBox.warning(self, "Hiányzó mező", "A Cím mező kötelező.")
             return

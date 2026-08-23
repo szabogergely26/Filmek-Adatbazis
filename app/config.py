@@ -25,6 +25,7 @@ Központi konfiguráció:
 
 import logging
 import os
+import shutil
 from configparser import ConfigParser, NoOptionError, NoSectionError
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -261,3 +262,63 @@ def resolve_cover_path(path: str | Path | None) -> Path | None:
         return p
 
     return COVER_DIR / p
+
+
+def ensure_cover_in_dir(path: str | Path | None) -> str:
+    """
+    Biztosítja, hogy a borítókép a COVER_DIR alatt legyen, és relatív
+    útvonalat ad vissza mentéshez.
+
+    - üres érték → ""
+    - ha a fájl már a COVER_DIR alatt van (vagy relatív útvonalként meg van
+      adva) → csak normalizálunk, NEM másolunk (elkerüljük a felesleges
+      duplikálást szerkesztéskor, ha a kép nem változott)
+    - ha a fájl a COVER_DIR-en KÍVÜL van → bemásoljuk a COVER_DIR-be,
+      megtartva az eredeti fájlnevet; névütközés esetén "_1", "_2", stb.
+      számlálót fűzünk hozzá
+
+    Ezt a függvényt csak a VÉGLEGES mentéskor (pl. wizard "Befejezés" vagy
+    EditDialog "Mentés" gombja) szabad hívni – nem a fájl kiválasztásakor,
+    hogy megszakított (Mégse-vel zárt) műveletek után ne maradjanak árva
+    másolt fájlok a COVER_DIR-ben.
+    """
+    if not path:
+        return ""
+
+    p = Path(str(path)).expanduser()
+
+    # Ha már relatív, vagy a COVER_DIR alatt van → nincs teendő, csak normalizálunk.
+    try:
+        rel = p.resolve().relative_to(COVER_DIR.resolve())
+        return str(rel)
+    except ValueError:
+        pass
+
+    if not p.is_absolute():
+        # Relatív, de nem oldható fel a COVER_DIR alá – hagyjuk, ahogy van.
+        return str(p)
+
+    if not p.is_file():
+        # Forrásfájl nem létezik (törölték/áthelyezték tallózás óta) –
+        # nincs mit másolni, az eredeti értéket adjuk vissza változatlanul.
+        LOGGER.warning("Borítókép forrásfájl nem található: %s", p)
+        return str(p)
+
+    COVER_DIR.mkdir(parents=True, exist_ok=True)
+
+    target = COVER_DIR / p.name
+    if target.resolve() != p.resolve():
+        stem, suffix = p.stem, p.suffix
+        counter = 1
+        while target.exists():
+            target = COVER_DIR / f"{stem}_{counter}{suffix}"
+            counter += 1
+
+        try:
+            shutil.copy2(p, target)
+            LOGGER.info("Borítókép bemásolva: %s -> %s", p, target)
+        except OSError:
+            LOGGER.exception("Borítókép másolása sikertelen: %s -> %s", p, target)
+            return str(p)
+
+    return target.name

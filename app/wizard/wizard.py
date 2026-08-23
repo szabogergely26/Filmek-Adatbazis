@@ -26,7 +26,7 @@ from __future__ import annotations
 from enum import IntEnum
 from typing import Any
 
-from config import LOGGER, normalize_cover_path, resolve_cover_path
+from config import LOGGER, ensure_cover_in_dir, resolve_cover_path
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -57,23 +57,24 @@ from utils.utils import parse_first_int
 
 logger = LOGGER.getChild("Wizard")
 
-class WizardPageId(IntEnum):
-    TYPE_SELECT = 0          # TypeSelectPage – Film / Sorozat
-    FILM_MODE = 1            # FilmModePage – Helyi / Online
-    FILM_BASIC = 2           # FilmBasicPage
-    FILM_META = 3            # FilmMetaPage
-    FILM_PARTS = 4           # FilmPartsPage
-    FILM_VIDEO = 5           # FilmVideoPage
-    FILM_AUDIO = 6           # FilmAudioPage
-    SERIES_INFO = 7          # SeriesInfoPage
-    SERIES_SEASON = 8        # SeriesSeasonPage
-    DETAILS = 9              # DetailsPage
-    EXTRA = 10                # ExtraPage
-    SUMMARY = 11             # SummaryPage – összegzés
 
+class WizardPageId(IntEnum):
+    TYPE_SELECT = 0  # TypeSelectPage – Film / Sorozat
+    FILM_MODE = 1  # FilmModePage – Helyi / Online
+    FILM_BASIC = 2  # FilmBasicPage
+    FILM_META = 3  # FilmMetaPage
+    FILM_PARTS = 4  # FilmPartsPage
+    FILM_VIDEO = 5  # FilmVideoPage
+    FILM_AUDIO = 6  # FilmAudioPage
+    SERIES_INFO = 7  # SeriesInfoPage
+    SERIES_SEASON = 8  # SeriesSeasonPage
+    DETAILS = 9  # DetailsPage
+    EXTRA = 10  # ExtraPage
+    SUMMARY = 11  # SummaryPage – összegzés
 
 
 # -------- HELPER függvények ---------------
+
 
 def tune_spinbox(spin: QSpinBox) -> None:
     """Növeli a fel/le nyilak kattintható felületét."""
@@ -88,12 +89,7 @@ def tune_spinbox(spin: QSpinBox) -> None:
     )
 
 
-
-
-
-
 # ------------ HELPER függvények vége ------------------------
-
 
 
 def build_cover_picker(parent: QWidget) -> tuple[QGroupBox, QLabel, QPushButton, QPushButton]:
@@ -170,9 +166,8 @@ def update_cover_preview_for_page(page: QWidget) -> None:
     label.setText("Nincs borító")
 
 
-
 class AddItemWizard(QWizard):
-    def __init__(self, dbm:Any, parent: QWidget | None = None) -> None:
+    def __init__(self, dbm: Any, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
         self.dbm = dbm
@@ -194,8 +189,6 @@ class AddItemWizard(QWizard):
 
         self.setWindowTitle("Új bejegyzés – varázsló")
 
-
-
     def collect_data(self) -> dict[str, Any]:
         """
         A wizard-ban megadott adatok összegyűjtése és egyetlen
@@ -206,31 +199,23 @@ class AddItemWizard(QWizard):
         """
 
         item_type = self.property("item_type") or "film"
-        #film_mode = self.property("film_mode") or "local"
-
-
-
-
+        # film_mode = self.property("film_mode") or "local"
 
         # --- FILM ÁG ---
 
         if item_type == "film":
-
-
             title = str(self.property("title") or "").strip()
             year = parse_first_int(self.property("year"))
             size_raw = str(self.property("size_gb") or "").strip()
             storage = str(self.property("storage") or "").strip()
-            cover_path = normalize_cover_path(self.property("cover_path"))
+            cover_path = ensure_cover_in_dir(self.property("cover_path"))
 
             genres = str(self.property("genres") or "").strip()
             duration_min = parse_first_int(self.property("duration_min"))
 
             is_part = bool(self.property("is_part"))
             part_number = self.property("part_number") if is_part else None
-            part_title = (
-                str(self.property("part_title") or "").strip() if is_part else ""
-            )
+            part_title = str(self.property("part_title") or "").strip() if is_part else ""
 
             resolution = str(self.property("resolution") or "").strip()
             video_format = str(self.property("video_format") or "").strip()
@@ -255,7 +240,7 @@ class AddItemWizard(QWizard):
                 "part": None if is_multi else part_number,
                 "year": year,
                 "is_seasonal": 0,
-                "seasonal_type": self.get_seasonal_type(),   # ÚJ !!!
+                "seasonal_type": self.get_seasonal_type(),  # ÚJ !!!
                 "genre": genres,
                 "duration": duration_str,
                 "size": "" if is_multi else size_str,
@@ -272,12 +257,6 @@ class AddItemWizard(QWizard):
             }
             return row
 
-
-
-
-
-
-
         # --- SOROZAT ÁG ---
 
         # Cím: a DetailsPage-en megadott cím elsőbbséget élvez
@@ -293,13 +272,15 @@ class AddItemWizard(QWizard):
         genres = str(self.field("genre") or "").strip()
 
         # Évadok száma – csak összegzéshez kell, a DB-ben nem "méret" lesz.
-        #seasons_count = self.property("series_season_count")
+        # seasons_count = self.property("series_season_count")
 
         # Tárolás, felbontás, formátum (DetailsPage)
         storage = str(self.field("storage") or "").strip()
-        cover_path = normalize_cover_path(self.property("cover_path"))
-        resolution = str(self.field("resolution") or "").strip()   # pl. "1080p"
-        format_txt = str(self.field("length") or "").strip() # sorozatnál: Formátum mező (Pl. "MKV")
+        cover_path = ensure_cover_in_dir(self.property("cover_path"))
+        resolution = str(self.field("resolution") or "").strip()  # pl. "1080p"
+        format_txt = str(
+            self.field("length") or ""
+        ).strip()  # sorozatnál: Formátum mező (Pl. "MKV")
 
         # SOROZATNÁL:
         # - Időtartam (duration) legyen üres
@@ -312,13 +293,13 @@ class AddItemWizard(QWizard):
             "part": None,
             "year": year,
             "is_seasonal": 0,
-            "seasonal_type": self.get_seasonal_type(),   # ÚJ !!!
+            "seasonal_type": self.get_seasonal_type(),  # ÚJ !!!
             "genre": genres,
-            "duration": "",          # NEM töltjük sorozatnál
-            "size": "",              # NEM töltjük sorozatnál
+            "duration": "",  # NEM töltjük sorozatnál
+            "size": "",  # NEM töltjük sorozatnál
             "storage_location": storage,
-            "format_type": resolution,   # "1080p"
-            "format": format_txt,        # "MKV"
+            "format_type": resolution,  # "1080p"
+            "format": format_txt,  # "MKV"
             "episode_title": "",
             "audio_tracks": "",
             "subtitle_tracks": "",
@@ -326,9 +307,6 @@ class AddItemWizard(QWizard):
             "cover_path": cover_path,
         }
         return row
-
-
-
 
     def get_seasonal_type(self) -> str:
         """Karácsonyi / Szilveszteri / mindkettő / egyik sem."""
@@ -343,9 +321,6 @@ class AddItemWizard(QWizard):
         if newyear:
             return "szilveszteri"
         return "none"
-
-
-
 
     # Mentés:
     def accept(self) -> None:
@@ -382,8 +357,8 @@ class AddItemWizard(QWizard):
 
                 inserted = 0
                 for season in range(1, seasons + 1):
-                    season_row = dict(row)          # alapadatok másolása
-                    season_row["part"] = season     # 1., 2., 3. évad, ...
+                    season_row = dict(row)  # alapadatok másolása
+                    season_row["part"] = season  # 1., 2., 3. évad, ...
 
                     # Később EditDialogból tudod módosítani külön
                     # az Időtartam / Méret mezőket évadonként.
@@ -454,7 +429,6 @@ class AddItemWizard(QWizard):
                         row.get("year"),
                     )
 
-
         except Exception as e:
             logger.exception("Hiba a wizard mentés közben")
             QMessageBox.critical(
@@ -468,18 +442,8 @@ class AddItemWizard(QWizard):
         super().accept()
 
 
-
-
-
-
-
-
-
-
-
-
-
 # ---- 0.oldal: ------ Film / Sorozat oldal ----------
+
 
 class TypeSelectPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -519,13 +483,8 @@ class TypeSelectPage(QWizardPage):
         return WizardPageId.FILM_MODE
 
 
-
-
-
-
-
-
 # -------- 1. oldal – Film módja: helyi fájl vagy online. ----------
+
 
 class FilmModePage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -561,12 +520,8 @@ class FilmModePage(QWizardPage):
         return WizardPageId.FILM_BASIC
 
 
-
-
-
-
-
 # ------- 2.oldal: – Film alapadatok: cím, méret, tárolás.
+
 
 class FilmBasicPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -628,13 +583,9 @@ class FilmBasicPage(QWizardPage):
         return WizardPageId.FILM_META
 
 
-
-
-
-
-
 # -------- 3.oldal: Film részletes metaadatok:
 #    megjelenés éve, műfaj(ok), időtartam, rész-információk.
+
 
 class FilmMetaPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -655,7 +606,6 @@ class FilmMetaPage(QWizardPage):
         self.duration_spin.setRange(1, 1000)
         self.duration_spin.setSuffix(" perc")
         tune_spinbox(self.duration_spin)
-
 
         self.is_part_combo = QComboBox()
         self.is_part_combo.addItems(["Nem", "Igen"])
@@ -732,7 +682,6 @@ class FilmMetaPage(QWizardPage):
 
         return True
 
-
     def nextId(self) -> int:
         """
         Következő oldal: FilmVideoPage.
@@ -741,11 +690,8 @@ class FilmMetaPage(QWizardPage):
         return WizardPageId.FILM_PARTS if is_multi else WizardPageId.FILM_VIDEO
 
 
-
-
-
-
 # -----4.oldal: Részek:
+
 
 class FilmPartsPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -810,12 +756,9 @@ class FilmPartsPage(QWizardPage):
         for row in range(self.table.rowCount()):
             part_no = row + 1
 
-            subtitle = (self.table.item(row, 1).text().strip()
-                        if self.table.item(row, 1) else "")
-            size_txt = (self.table.item(row, 2).text().strip()
-                        if self.table.item(row, 2) else "")
-            loc = (self.table.item(row, 3).text().strip()
-                   if self.table.item(row, 3) else "")
+            subtitle = self.table.item(row, 1).text().strip() if self.table.item(row, 1) else ""
+            size_txt = self.table.item(row, 2).text().strip() if self.table.item(row, 2) else ""
+            loc = self.table.item(row, 3).text().strip() if self.table.item(row, 3) else ""
 
             entry: dict[str, Any] = {"part": part_no}
             if subtitle:
@@ -848,6 +791,7 @@ class FilmPartsPage(QWizardPage):
 
 # ------ 5.oldal: Videó adatok:
 #  ------  felbontás, formátum / konténer.
+
 
 class FilmVideoPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -914,22 +858,17 @@ class FilmVideoPage(QWizardPage):
         return WizardPageId.FILM_AUDIO
 
 
-
-
-
-
-
 # ---- 6.oldal: Audio és felirat adatok.
 # ------  Helyi filmnél: hang + felirat.
 # ---------- Online filmnél: hang + felirat + szolgáltató.
+
 
 class FilmAudioPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.setTitle("Audio és felirat")
         self.setSubTitle(
-            "Add meg a film hang- és feliratinformációit. "
-            "Online filmnél a szolgáltatót is."
+            "Add meg a film hang- és feliratinformációit. Online filmnél a szolgáltatót is."
         )
 
         self.audio_edit = QLineEdit()
@@ -985,13 +924,9 @@ class FilmAudioPage(QWizardPage):
         return WizardPageId.EXTRA
 
 
-
-
-
-
-
 # -- 7.oldal: Sorozat alapadatok:
 # ------  cím, év, műfaj(ok), évadok száma, megjegyzés.
+
 
 class SeriesInfoPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -1018,9 +953,7 @@ class SeriesInfoPage(QWizardPage):
         self.finished_check.toggled.connect(self._on_finished_toggled)
 
         self.notes_edit = QTextEdit()
-        self.notes_edit.setPlaceholderText(
-            "Egyéb megjegyzés a sorozatról (nem kötelező)."
-        )
+        self.notes_edit.setPlaceholderText("Egyéb megjegyzés a sorozatról (nem kötelező).")
         self._cover_path: str | None = None
 
         # --- Layout ---
@@ -1084,20 +1017,8 @@ class SeriesInfoPage(QWizardPage):
         return WizardPageId.SERIES_SEASON
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ---- 8.oldal:  Sorozat típus + évadok száma
+
 
 class SeriesSeasonPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -1126,9 +1047,7 @@ class SeriesSeasonPage(QWizardPage):
 
         if not val.isdigit():
             QMessageBox.warning(
-                self,
-                "Hiba",
-                "Az évadok számának egy pozitív egész számnak kell lennie."
+                self, "Hiba", "Az évadok számának egy pozitív egész számnak kell lennie."
             )
             return False
 
@@ -1143,14 +1062,8 @@ class SeriesSeasonPage(QWizardPage):
         return WizardPageId.DETAILS
 
 
-
-
-
-
-
-
-
 # ----- 9.oldal: Alapadatok + több részes mezők
+
 
 class DetailsPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -1341,16 +1254,8 @@ class DetailsPage(QWizardPage):
         return WizardPageId.EXTRA
 
 
-
-
-
-
-
-
-
-
-
 # ---------- 10.oldal: Egyéb adatok ------
+
 
 class ExtraPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -1394,7 +1299,6 @@ class ExtraPage(QWizardPage):
 
         self.setLayout(layout)
 
-
         # --- Vízszintes elválasztó vonal ---
         line = QFrame()
         line.setFrameShape(QFrame.HLine)
@@ -1417,7 +1321,6 @@ class ExtraPage(QWizardPage):
         self.registerField("christmas", self.chk_christmas)
         self.registerField("newyear", self.chk_newyear)
 
-
         # Field-ek regisztrálása
         self.registerField("director", self.director_edit)
         self.registerField("actors", self.actors_edit)
@@ -1435,17 +1338,8 @@ class ExtraPage(QWizardPage):
         return WizardPageId.SUMMARY
 
 
-
-
-
-
-
-
-
-
-
-
 # ---------- 11.oldal: Összegzés -----------
+
 
 class SummaryPage(QWizardPage):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -1589,8 +1483,6 @@ class SummaryPage(QWizardPage):
                 notes_label = QLabel(series_notes)
                 notes_label.setWordWrap(True)
                 self.form_layout.addRow("Megjegyzés:", notes_label)
-
-
 
     def isFinalPage(self) -> bool:
         """Ez az utolsó oldal, innen már csak a Befejezés gomb aktív."""
