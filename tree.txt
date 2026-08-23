@@ -1,0 +1,2 @@
+# Ha szükséges:
+tree ~/Projects/Filmek-Adatbazis -I 'venv|__pycache__|.git|_appdata|node_modules' -L 3

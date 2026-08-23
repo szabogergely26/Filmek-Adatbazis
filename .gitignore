@@ -47,10 +47,6 @@ deb_build/
 *.zip
 *.tar.gz
 
-# -------------------------
-# VSCode
-# -------------------------
-.vscode/
 
 # -------------------------
 # OS junk
@@ -58,10 +54,6 @@ deb_build/
 .DS_Store
 Thumbs.db
 
-# -------------------------
-# Local user settings
-# -------------------------
-settings.json
 
 
 ruff-report*.txt

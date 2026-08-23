@@ -9,26 +9,35 @@ A program célja, hogy a saját filmek, sorozatok, részek, évadok, tárhelyek,
 > készült, emberi tervezés, irányítás és folyamatos ellenőrzés mellett. A
 > funkcionalitásért és a projekt irányáért a szerző felel.
 
+**FONTOS: Itt nincs hagyományos Fejlesztői mód , csak kísérleti funkciók**
+          **csak main és dev ág van**
+
 A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**
 
-## Első indítás varázsló (First Run Wizard)
+## Adatbázis-útvonal logika
 
-Az alkalmazás induláskor a `main.py`-ban a `resolve_db_path()` függvénnyel ellenőrzi,
-van-e érvényes `db_path` elmentve a QSettings-ben (org: `Filmekadatbazis`, app: `FilmekAdatbazis`):
+Az alkalmazás a `config.py`-ban lévő `IS_INSTALLED` flag alapján dönti el, hova
+írjon adatot — a felhasználó **nem választ** helyet, ez fix, kiszámítható logika:
 
-- **Ha van és a fájl létezik** → az app azt az adatbázist tölti be, a varázsló nem jelenik meg.
-- **Ha nincs, vagy a mentett fájl már nem létezik** → elindul a First Run Wizard
-  (`wizard/first_run_wizard.py`), ami felajánlja:
-  - **Új üres adatbázis létrehozása** — friss séma jön létre az app adatkönyvtárában
-    (`APP_DATA_DIR`, lásd `config.py`)
-  - **Meglévő adatbázis megnyitása** — a kiválasztott fájl bemásolódik (`shutil.copy2`)
-    az app saját adatkönyvtárába, nem in-place referenciaként használjuk
+- **Telepített (`.deb`) állapotban** → `~/.local/share/FilmekAdatbazis/movies.db`
+- **Fejlesztői módban** (VS Code, terminál, `./run.sh`) → `_appdata/dev/movies.db`
+  a projekt gyökerében
 
-A varázsló manuális újraindításához (pl. teszteléshez) töröld a `db_path` bejegyzést
-a QSettings-ből:
+> **Build előtt mindig ellenőrizd** a `config.py`-ban az `IS_INSTALLED` sort — ha
+> a `.deb` csomagolás telepítési útvonala változik, ezt itt kell átírni.
 
-- **Linux**: `~/.config/Filmekadatbazis/FilmekAdatbazis.conf`
-- **Windows**: registry `HKEY_CURRENT_USER\Software\Filmekadatbazis\FilmekAdatbazis`
+### First Run Wizard — csak Windows buildhez (archiválva)
+
+Korábban létezett egy `QSettings`-alapú `db_path` felülírás és egy First Run
+Wizard (`wizard/first_run_wizard.py`), ami induláskor felajánlotta a DB hely
+kiválasztását. Ez a `main` (Linux) ágon **szándékosan ki lett véve**, mert csak
+zavaró kettősséget okozott a naplózásban (a `config.py` alapértéke és a
+ténylegesen használt útvonal eltért egymástól).
+
+A wizard kódja és a visszaállítás lépései a
+[`docs/windows-first-run-wizard.md`](docs/windows-first-run-wizard.md) fájlban
+vannak archiválva — kizárólag akkor releváns, ha valaha készül Windows build,
+ahol nincs a Linuxéhoz hasonló egységes adatkönyvtár-konvenció.
 
 ---
 
@@ -133,6 +142,13 @@ cd app
 ../venv/bin/python ./main.py
 ```
 
+### VS Code interpreter
+
+A projekt tartalmaz egy verziókövetett `.vscode/settings.json`-t, ami relatív
+útvonallal (`${workspaceFolder}/venv/bin/python`) állítja be az interpretert,
+így klónozás/áthelyezés után is automatikusan a projekt saját `venv`-jét
+találja meg VS Code — feltéve, hogy előtte lefutott a `rebuild_venv.sh`.
+
 ---
 
 ## Ruff ellenőrzés
@@ -163,13 +179,9 @@ target-version = "py311"
 
 ## Adatkönyvtárak
 
-Fejlesztői módban az alkalmazás jelenleg a projektkönyvtár alatt dolgozik:
+Az adatbázis-útvonal logikáját lásd fentebb ("Adatbázis-útvonal logika").
 
-```text
-_appdata/dev/
-```
-
-Itt található fejlesztői futáskor:
+Fejlesztői módban a projektkönyvtár alatt található:
 
 ```text
 _appdata/dev/movies.db
@@ -177,13 +189,11 @@ _appdata/dev/logs/
 _appdata/dev/Movies7.conf
 ```
 
-A későbbi telepített stabil verziónál célszerű külön felhasználói adatkönyvtárat használni, például:
+Telepített állapotban a felhasználó saját adatkönyvtárában:
 
 ```text
 ~/.local/share/FilmekAdatbazis/
 ```
-
-Ez azért fontos, mert egy DEB csomagból telepített alkalmazás nem írhat a `/usr/share/...` programkönyvtárba.
 
 ---
 

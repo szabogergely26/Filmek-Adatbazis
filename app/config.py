@@ -15,6 +15,9 @@ Központi konfiguráció:
 - Feature kapcsolók (Beállítások ablakból használd!!)
 - UI konstansok
 
+# ⚠️ BUILD ELŐTT ELLENŐRIZD: IS_INSTALLED logika lent (~35. sor körül) —
+# lásd részletes megjegyzést az "App adatkönyvtár" szekciónál.
+
 """
 
 
@@ -29,41 +32,50 @@ from pathlib import Path
 # -- Importok vége ----------
 
 
-
-
-
-
-
-
-
-
-
 # ---------------- Alap adatok ----------------
 
-APP_NAME = "FilmekAdatbazis"             # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
+APP_NAME = "FilmekAdatbazis"  # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
 APP_DISPLAY_NAME = "Filmek Adatbázis"
 APP_VERSION = "10.0"
 APP_ORG = "Filmekadatbazis"
-
 
 
 # ------------------------------------ Projekt elérési utak ------------------------------------
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-
 IS_INSTALLED = str(ROOT).startswith("/usr/share/filmek-adatbazis")
 
-ICON_PATH = ROOT / "ikonok" / "filmek.ico"
-PROVIDERS_DIR = ROOT / "ikonok" / "providers"
-COVER_DIR = ROOT / "cover"
-
 # ------------------------------------ App adatkönyvtár ------------------------------------
+
+# ⚠️ FONTOS — build előtt mindig ellenőrizd ezt a logikát!
+#
+# IS_INSTALLED dönti el, hogy az app hova ír adatot:
+#   - True  (telepített .deb-ből fut) → ~/.local/share/FilmekAdatbazis/movies.db
+#   - False (VS Code / terminál / dev futtatás) → <projekt>/_appdata/dev/movies.db
+#
+# A döntés kizárólag az ROOT elérési útjából derül ki:
+#   IS_INSTALLED = str(ROOT).startswith("/usr/share/filmek-adatbazis")
+#
+# Ha a .deb csomagolás telepítési útvonala valaha megváltozik (pl. más
+# csomagolási struktúra, más base path), ezt a stringet ITT kell átírni,
+# különben a telepített app is a dev _appdata mappát próbálná használni
+# (vagy fordítva).
+#
+# A First Run Wizard / QSettings-alapú db_path felülírás szándékosan ki lett
+# véve erről az ágról (lásd: docs/windows-first-run-wizard.md) — Linuxon a
+# DB helye mindig ez a fix logika dönti el, a felhasználó nem választhat.
 
 if IS_INSTALLED:
     APP_DATA_DIR = Path.home() / ".local" / "share" / APP_NAME
 else:
     APP_DATA_DIR = ROOT / "_appdata" / "dev"
+
+
+ICON_PATH = ROOT / "ikonok" / "filmek.ico"
+PROVIDERS_DIR = ROOT / "ikonok" / "providers"
+COVER_DIR = ROOT / "cover"
+
 
 APP_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -78,19 +90,9 @@ config: ConfigParser = ConfigParser()
 config.read(CONFIG_PATH)
 
 
-
 print("COVER_DIR:", COVER_DIR)
 print("APP_DATA_DIR:", APP_DATA_DIR)
 print("DB_PATH:", DB_PATH)
-
-
-
-
-
-
-
-
-
 
 
 # ---------------- NAPLÓZÁS ----------------------------------------------------------------
@@ -135,18 +137,6 @@ ui = LOGGER.getChild("ui")  # == "FilmekAdatbazis.ui"
 ui.propagate = True  # (alapból is True, de legyen egyértelmű)
 ui.setLevel(LOGGER.level)
 
-
-
-
-
-
-
-
-
-
-
-
-
 # ---------------- Feature kapcsolók (ki/be) ----------------
 
 # Ha True: Új → többoldalas varázsló (AddItemWizard)
@@ -163,14 +153,6 @@ ENABLE_PROVIDER_BADGES = True
 # Ha True: a kártyákon megjelenik a borítókép (ha van a COVER_DIR-ben)
 # Ha False: borító nélkül rajzoljuk a kártyát
 SHOW_COVER_ON_CARD = True
-
-
-
-
-
-
-
-
 
 
 # ---------------- UI / Kártya / Gomb konstansok ----------------
@@ -200,8 +182,6 @@ FONT_SIZE_META = 13
 NO_COVER_TEXT = "Nincs kép"
 
 
-
-
 def get_bool(section: str, key: str, fallback: bool = False) -> bool:
     """Biztonságos bool olvasás a Movies7.conf-ból."""
     try:
@@ -224,10 +204,8 @@ def save_config() -> None:
         config.write(f)
 
 
-
-
-
 # Kényelmi gatterek:
+
 
 def is_cover_enabled() -> bool:
     # régi default: SHOW_COVER_ON_CARD = True → fallback=True
@@ -242,8 +220,8 @@ def is_wizard_enabled() -> bool:
     return get_bool("General", "use_wizard_for_new", fallback=True)
 
 
-
 # ---------- Borítóképek segédfüggvény ----------------
+
 
 def normalize_cover_path(path: str | Path | None) -> str:
     """

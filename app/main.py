@@ -26,10 +26,8 @@ from PySide6.QtWidgets import QApplication
 
 # Themes:
 from themes.theme_utils import apply_theme_from_settings
-from wizard.first_run_wizard import FirstRunWizard
 
 # -- Importok vége -----
-
 
 
 # Egypéldányos védelem (Linux + Windows): localhost port lock
@@ -57,8 +55,6 @@ def ensure_single_instance() -> bool:
     return True
 
 
-
-
 def load_stylesheet() -> str:
     """
     style.css betöltése a main7.0.py melletti könyvtárból.
@@ -71,33 +67,6 @@ def load_stylesheet() -> str:
     except OSError:
         # Nem állítjuk meg az appot, csak nem lesz stylesheet
         return ""
-
-
-
-def resolve_db_path() -> Path:
-    """
-    Visszaadja a hasznĂˇlandĂł adatbĂˇzis Ăştvonalat.
-    - Ha van elmentett Ă©s lĂ©tezĹ‘ db_path a QSettings-ben, azt hasznĂˇljuk.
-    - KĂĽlĂ¶nben visszaesĂĽnk a config.DB_PATH alapĂ©rtelmezettre.
-    """
-    settings = QSettings(APP_ORG, APP_NAME)
-    saved_path = settings.value("db_path", "", str)
-
-    if saved_path:
-        p = Path(saved_path)
-        if p.exists():
-            return p
-        LOGGER.warning(
-            "Elmentett db_path nem letezik: %s. Visszaesunk az alapertelmezettre.", saved_path
-        )
-
-    return DB_PATH
-
-
-
-
-
-
 
 
 # --------- Globális hibalogolás (minden nem kezelt kivétel menjen logba is) ---------
@@ -121,9 +90,8 @@ sys.excepthook = log_unhandled_exceptions
 # --------Vége -------------------
 
 
-
-
 # ----- LOG: ------------
+
 
 def setup_logging() -> None:
     """Naplózás beállítása QSettings alapján."""
@@ -133,11 +101,9 @@ def setup_logging() -> None:
     # Ha be van kapcsolva a debug naplózás → DEBUG, különben INFO
     log_level = logging.DEBUG if debug_logging else logging.INFO
 
-
     log_dir = APP_DATA_DIR / "logs"
     log_dir.mkdir(parents=True, exist_ok=True)
     log_file = log_dir / "root.log"
-
 
     fmt = "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
     datefmt = "%Y-%m-%d %H:%M:%S"
@@ -167,7 +133,6 @@ def setup_logging() -> None:
         "Naplózás inicializálva. Szint: %s",
         logging.getLevelName(log_level),
     )
-
 
 
 # --------- BOOTSTRAP / SÉMA + MIGRÁCIÓ ---------
@@ -211,9 +176,7 @@ def migrate_schema_raw(path: str) -> None:
     with sqlite3.connect(path) as con:
         cur = con.cursor()
         cur.execute("PRAGMA foreign_keys = ON;")
-        cur.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='movies'"
-        )
+        cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='movies'")
         if not cur.fetchone():
             return
         cur.execute("PRAGMA table_info(movies)")
@@ -232,8 +195,6 @@ def migrate_schema_raw(path: str) -> None:
             if col not in cols:
                 cur.execute(f"ALTER TABLE movies ADD COLUMN {col} {ddl}")
         con.commit()
-
-
 
 
 # --------- Sötét téma ---------
@@ -274,40 +235,13 @@ def main() -> int:
     # app név
     app.setApplicationName(APP_NAME)
 
-    # --- Első indítás ellenőrzése ---
-    settings = QSettings(APP_ORG, APP_NAME)
-    saved_db_path = settings.value("db_path", "", str)
-
-    db_path: Path | None = None
-
-    if not saved_db_path:
-        LOGGER.info("Nincs mentett db_path, elso inditas varazslo indul.")
-        wizard = FirstRunWizard(DB_PATH)
-        if wizard.exec():
-            chosen = wizard.chosen_db_path()
-            if chosen:
-                settings.setValue("db_path", chosen)
-                settings.sync()
-                LOGGER.info("First run wizard: db_path elmentve: %s", chosen)
-                db_path = Path(chosen)
-
-        else:
-            LOGGER.info("Első indítás Varázsló megszakítva. Kilépés...")
-            return 0
-
-
-    if db_path is None:
-        db_path = resolve_db_path()
-
+    db_path = DB_PATH
     LOGGER.info("Hasznalt adatbazis: %s", db_path)
 
     ensure_schema_fresh(db_path)
     migrate_schema_raw(db_path)
 
-
-
-
-   # Téma alkalmazása a beállítások alapján
+    # Téma alkalmazása a beállítások alapján
     apply_theme_from_settings(app)
 
     # globális ikon
@@ -327,5 +261,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-
     sys.exit(main())

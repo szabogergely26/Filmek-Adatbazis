@@ -35,6 +35,31 @@
 <h1>Változásnapló</h1>
 
 <section class="ver">
+    <h2>10.0.1 — 2026-08-23</h2>
+    <ul>
+        <li><b>Javítás:</b> DB_PATH kettősség megszüntetve — eddig a <code>config.py</code> alapértéke és a
+            ténylegesen használt adatbázis (<code>QSettings</code>-ből felülírva) eltért egymástól, ami
+            zavaró naplózást és megtévesztő állapotot okozott.</li>
+        <li><b>Eltávolítva (main ág):</b> First Run Wizard és a hozzá tartozó <code>resolve_db_path()</code> /
+            <code>QSettings</code>-alapú <code>db_path</code> felülírás. Linuxon a DB helye mostantól kizárólag
+            a <code>config.py</code> <code>IS_INSTALLED</code> logikája dönti el, fix útvonalon
+            (<code>~/.local/share/FilmekAdatbazis/</code> telepítve, <code>_appdata/dev/</code> fejlesztői
+            módban), a felhasználó nem választ helyet.
+        </li>
+        <li><b>Archiválva:</b> a kivett wizard-kód és a hozzá tartozó útmutató átkerült a
+            <code>docs/windows-first-run-wizard.md</code> fájlba, jövőbeli Windows build esetére.
+        </li>
+        <li><b>Fejlesztői környezet:</b> <code>.vscode/settings.json</code> mostantól verziókövetett,
+            relatív <code>${workspaceFolder}/venv/bin/python</code> interpreter-útvonallal — elkerülve a
+            korábbi, gépspecifikus/elavult interpreter-hivatkozásból eredő <code>ModuleNotFoundError</code>
+            hibát.</li>
+        <li><b>Config:</b> build előtti figyelmeztető megjegyzés hozzáadva a <code>config.py</code>
+            <code>IS_INSTALLED</code> logikájához.
+        </li>
+    </ul>
+</section>
+
+<section class="ver">
     <h2>7.0 Fejlesztői verzió — 2025-11-23 -tól.......</h2>
     <ul>
         <li>Új: többrészes film gyorsfelvitel alapok</li>
@@ -57,20 +82,20 @@
 
 
 
-        <li style="margin-top: .8em;">
-            <span style="font-size: 16px; font-weight: bold;">
-                Tervezett funkciók (ötletek időpontjai)
-            </span>
-        </li>
-    
-        <li>
-            Tervezés: részletek nézet lenyíló változata (kapcsolható:
-            <code>FORCE_LEGACY_DETAILS</code>) — 2025.11.14
-        </li>
-    
-        <li>
-            Tervezés: varázsló „Új felvétele” módja gyors többszörös adatbevitelhez — 2025.11.15
-        </li>
+    <li style="margin-top: .8em;">
+        <span style="font-size: 16px; font-weight: bold;">
+            Tervezett funkciók (ötletek időpontjai)
+        </span>
+    </li>
+
+    <li>
+        Tervezés: részletek nézet lenyíló változata (kapcsolható:
+        <code>FORCE_LEGACY_DETAILS</code>) — 2025.11.14
+    </li>
+
+    <li>
+        Tervezés: varázsló „Új felvétele” módja gyors többszörös adatbevitelhez — 2025.11.15
+    </li>
     </ul>
 </section>
 
