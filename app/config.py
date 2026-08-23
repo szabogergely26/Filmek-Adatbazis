@@ -37,7 +37,7 @@ from pathlib import Path
 
 APP_NAME = "FilmekAdatbazis"  # ez kerül: ~/.local/share/Filmekadatbazis/FilmekAdatbázis/
 APP_DISPLAY_NAME = "Filmek Adatbázis"
-APP_VERSION = "10.0.1"
+APP_VERSION = "10.1.0"
 APP_ORG = "Filmekadatbazis"
 
 
