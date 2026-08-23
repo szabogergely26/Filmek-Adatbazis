@@ -12,7 +12,7 @@ A program célja, hogy a saját filmek, sorozatok, részek, évadok, tárhelyek,
 **FONTOS: Itt nincs hagyományos Fejlesztői mód , csak kísérleti funkciók**
           **csak main és dev ág van**
 
-A projekt jelenlegi állapota: **Filmek Adatbázis 10.0**
+A projekt jelenlegi állapota: **Filmek Adatbázis 10.0.1**
 
 ## Adatbázis-útvonal logika
 

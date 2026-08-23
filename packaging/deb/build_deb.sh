@@ -2,10 +2,18 @@
 set -euo pipefail
 
 PACKAGE_NAME="filmek-adatbazis"
-VERSION="10.0.0"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+
+# Verziószám kiolvasása a config.py-ból (egyetlen forrás az igazságra)
+VERSION=$(grep -oP '(?<=APP_VERSION = ")[^"]+' "$PROJECT_DIR/app/config.py")
+
+if [[ -z "$VERSION" ]]; then
+    echo "HIBA: nem sikerült kiolvasni az APP_VERSION-t a config.py-ból!" >&2
+    exit 1
+fi
+
 
 BUILD_DIR="$SCRIPT_DIR/build"
 ROOT_DIR="$SCRIPT_DIR/root"
@@ -50,8 +58,8 @@ fi
 # Dokumentáció könyvtár
 mkdir -p "$PACKAGE_DIR/usr/share/doc/$PACKAGE_NAME"
 
-# DEBIAN/control
-cp "$SCRIPT_DIR/control" "$DEBIAN_DIR/control"
+# DEBIAN/control — control.in sablonból generálva, VERSION behelyettesítve
+sed "s/@VERSION@/$VERSION/" "$SCRIPT_DIR/control.in" > "$DEBIAN_DIR/control"
 
 # Jogosultságok
 chmod 755 "$PACKAGE_DIR/usr/bin/$PACKAGE_NAME"
@@ -71,5 +79,13 @@ OUTPUT_FILE="$DIST_DIR/${PACKAGE_NAME}.deb"
 dpkg-deb --root-owner-group --build "$PACKAGE_DIR" "$OUTPUT_FILE"
 
 echo
-echo "Elkészült:"
-echo "$OUTPUT_FILE"
+echo "======================================"
+echo "  Csomag elkészült (v$VERSION)"
+echo "======================================"
+echo "  Fájl: $OUTPUT_FILE"
+echo "  Méret: $(du -h "$OUTPUT_FILE" | cut -f1)"
+echo "======================================"
+echo
+echo "Telepítéshez:"
+echo "  sudo dpkg -i $OUTPUT_FILE"
+echo
