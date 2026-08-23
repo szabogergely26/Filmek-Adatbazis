@@ -18,9 +18,10 @@ from collections.abc import Mapping
 from typing import Any
 
 from config import resolve_cover_path
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QDateTime, Qt, QTimer, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
+    QApplication,
     QDialog,
     QFrame,
     QHBoxLayout,
@@ -40,6 +41,7 @@ LOGGER = logging.getLogger(__name__)
 # ---------------------------------------------------------------------
 # Segédek
 # ---------------------------------------------------------------------
+
 
 def _load_cover_pixmap(movie: Mapping[str, Any]) -> QPixmap | None:
     """
@@ -97,12 +99,8 @@ def _human_type(movie: Mapping[str, Any]) -> str:
     return raw.capitalize() if raw else "Ismeretlen"
 
 
-
-
-
-
-
 _SIZE_RE = re.compile(r"^\s*([\d.,]+)\s*(tb|gb|mb)\s*$", re.IGNORECASE)
+
 
 def _parse_size_text_to_gb(size_text: str | None) -> float | None:
     if not size_text:
@@ -122,14 +120,11 @@ def _parse_size_text_to_gb(size_text: str | None) -> float | None:
     return None
 
 
-
 def _find_db_conn_from_widget(w: Any):
     """
     Visszaad egy sqlite3.Connection-t, ha talál a widget szülőláncban olyan objektumot,
     aminek van .db.conn attribútuma.
     """
-
-
 
     # 0) top-level ablakon (legbiztosabb)
     try:
@@ -142,8 +137,6 @@ def _find_db_conn_from_widget(w: Any):
     except Exception:
         pass
 
-
-
     # 1) közvetlenül w-n
     try:
         db = getattr(w, "db", None)
@@ -152,9 +145,6 @@ def _find_db_conn_from_widget(w: Any):
             return conn
     except Exception:
         pass
-
-
-
 
     # 2) widget szülőlánc bejárása
     try:
@@ -177,11 +167,6 @@ def _find_db_conn_from_widget(w: Any):
         pass
 
     return None
-
-
-
-
-
 
 
 def _enrich_movie_with_parts(parent: Any, movie: dict[str, Any]) -> None:
@@ -289,15 +274,8 @@ def _enrich_movie_with_parts(parent: Any, movie: dict[str, Any]) -> None:
         if _to_int(movie.get("parts_count") or 1) < len(parts_rows):
             movie["parts_count"] = len(parts_rows)
 
-
-
     except Exception:
         return
-
-
-
-
-
 
 
 def _format_gb(gb: float | None) -> str:
@@ -326,26 +304,13 @@ def _build_parts_lines(movie: Mapping[str, Any]) -> list[str]:
     return lines
 
 
-
-
-
-
-
-
-
-
-
-
-
 # ------ Segédek vége ------------
-
-
-
 
 
 # ---------------------------------------------------------------------
 # InfoRow
 # ---------------------------------------------------------------------
+
 
 class InfoRow(QWidget):
     """
@@ -367,9 +332,7 @@ class InfoRow(QWidget):
 
         self._value = QLabel(value_text or "")
         self._value.setObjectName("detailsValue")
-        self._value.setTextInteractionFlags(
-            Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard
-        )
+        self._value.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
         self._value.setWordWrap(True)
 
         layout = QHBoxLayout(self)
@@ -385,15 +348,10 @@ class InfoRow(QWidget):
         return self._value.text()
 
 
-
-
-
-
-
-
 # ---------------------------------------------------------------------
 # Tabok
 # ---------------------------------------------------------------------
+
 
 class ModernVideoTab(QWidget):
     def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
@@ -470,12 +428,7 @@ class ModernNotesTab(QWidget):
 
         layout.addWidget(QLabel("Megjegyzések"))
 
-        notes_raw = (
-            movie.get("notes")
-            or movie.get("comment")
-            or movie.get("remarks")
-            or ""
-        )
+        notes_raw = movie.get("notes") or movie.get("comment") or movie.get("remarks") or ""
 
         self.txt_notes = QTextEdit(self)
         self.txt_notes.setObjectName("detailsNotesEdit")
@@ -493,13 +446,28 @@ class ModernNotesTab(QWidget):
 
 class ModernTechnicalTab(QWidget):
     TECH_FIELDS = [
-        "id", "type", "part", "episode_title", "year", "end_year",
-        "is_completed", "is_seasonal", "seasonal_label",
-        "genre", "genre_general", "genre_official",
-        "storage_location", "provider",
-        "format_type", "format",
-        "video_codec", "video_bitrate", "frame_rate", "aspect_ratio",
-        "audio_tracks", "subtitle_tracks",
+        "id",
+        "type",
+        "part",
+        "episode_title",
+        "year",
+        "end_year",
+        "is_completed",
+        "is_seasonal",
+        "seasonal_label",
+        "genre",
+        "genre_general",
+        "genre_official",
+        "storage_location",
+        "provider",
+        "format_type",
+        "format",
+        "video_codec",
+        "video_bitrate",
+        "frame_rate",
+        "aspect_ratio",
+        "audio_tracks",
+        "subtitle_tracks",
     ]
 
     def __init__(self, movie: Mapping[str, Any], parent: QWidget | None = None) -> None:
@@ -519,20 +487,10 @@ class ModernTechnicalTab(QWidget):
         layout.addStretch(1)
 
 
-
-
-
-
-
-
-
-
-
-
-
 # ---------------------------------------------------------------------
 # ModernDetailDialog – egyetlen modern dialógus
 # ---------------------------------------------------------------------
+
 
 class ModernDetailDialog(QDialog):
     edit_requested = Signal(int)
@@ -543,8 +501,6 @@ class ModernDetailDialog(QDialog):
         self._movie: Mapping[str, Any] = movie
         self._notes_original = ""
 
-
-
         self.setModal(True)
         self.setObjectName("ModernDetailDialog")
         self.resize(1000, 800)  # X, Y
@@ -552,11 +508,7 @@ class ModernDetailDialog(QDialog):
         self._init_ui()
         self._populate()
 
-     #   self.setObjectName("infoRow")
-
-
-
-
+    #   self.setObjectName("infoRow")
 
     # --- UI váz
     def _init_ui(self) -> None:
@@ -650,16 +602,17 @@ class ModernDetailDialog(QDialog):
         self.btn_close.setObjectName("detailsCloseButton")
         self.btn_close.clicked.connect(self._on_close_clicked)
 
-
         bottom_lay.addWidget(self.btn_save_notes)
         bottom_lay.addWidget(self.btn_edit)
         bottom_lay.addWidget(self.btn_close)
         main.addWidget(bottom)
 
-
-
-
-
+        # --- Frissülést jelző státusz-üzenet (szerkesztés utáni populate alatt) ---
+        self.lbl_refresh_status = QLabel("Kis türelmet, az oldal frissül…", self)
+        self.lbl_refresh_status.setObjectName("refreshStatusBanner")
+        self.lbl_refresh_status.setAlignment(Qt.AlignCenter)
+        self.lbl_refresh_status.setVisible(False)
+        main.addWidget(self.lbl_refresh_status)
 
     # --- Tartalom feltöltés
 
@@ -689,8 +642,6 @@ class ModernDetailDialog(QDialog):
         else:
             self.lbl_seasonal.setVisible(False)
 
-
-
         # Cover
         pm = _load_cover_pixmap(m)
         self.lbl_cover.setPixmap(QPixmap())
@@ -705,9 +656,6 @@ class ModernDetailDialog(QDialog):
                 Qt.SmoothTransformation,
             )
             self.lbl_cover.setPixmap(scaled)
-
-
-
 
         # Tabs – mindig újraépítjük tisztán
         self.tabs.clear()
@@ -725,7 +673,6 @@ class ModernDetailDialog(QDialog):
         self.tabs.addTab(self.tab_tech, "Technikai adatok")
 
         self._notes_original = self.tab_notes.get_notes_text()
-
 
         # Title bar
         self.setWindowTitle(f"Részletek – {title}")
@@ -796,7 +743,6 @@ class ModernDetailDialog(QDialog):
                 lbl.setTextInteractionFlags(Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard)
                 box_lay.addWidget(lbl)
 
-
             layout.addWidget(box)
 
         add("Tárolás / hely:", "storage_location")
@@ -808,13 +754,39 @@ class ModernDetailDialog(QDialog):
         if is_completed is not None and is_completed != "":
             layout.addWidget(
                 InfoRow(
-                "Befejezett sorozat:",
-                "Igen" if bool(is_completed) else "Nem",
+                    "Befejezett sorozat:",
+                    "Igen" if bool(is_completed) else "Nem",
+                )
             )
-        )
 
         layout.addStretch(1)
         return tab
+
+    def show_refresh_status(self) -> None:
+        """Azonnal megjeleníti a 'Kis türelmet, az oldal frissül…' üzenetet,
+        és rákényszeríti a kirajzolást, mielőtt a hívó folytatná a (blokkoló)
+        adatfrissítést (_populate() / kártyák újraépítése)."""
+        self.lbl_refresh_status.setVisible(True)
+        self.lbl_refresh_status.repaint()
+        self._refresh_status_started_at = QDateTime.currentMSecsSinceEpoch()
+        QApplication.processEvents()
+
+    def hide_refresh_status(self, minimum_visible_ms: int = 5000) -> None:
+        """Elrejti a frissülést jelző üzenetet.
+
+        Ha a show_refresh_status() óta még nem telt el minimum_visible_ms
+        (alapból 5 mp), addig kivárunk, hogy az üzenet ne tűnjön el
+        villanásszerűen egy gyors frissítésnél – a felhasználó mindig
+        biztosan lássa, amíg az adat/kép ténylegesen frissül."""
+        started_at = getattr(self, "_refresh_status_started_at", None)
+        if started_at is not None:
+            elapsed = QDateTime.currentMSecsSinceEpoch() - started_at
+            remaining = minimum_visible_ms - elapsed
+            if remaining > 0:
+                QTimer.singleShot(remaining, lambda: self.lbl_refresh_status.setVisible(False))
+                return
+
+        self.lbl_refresh_status.setVisible(False)
 
     # --- Edit signal
 
@@ -827,23 +799,16 @@ class ModernDetailDialog(QDialog):
         except (TypeError, ValueError):
             return
 
-
-
-
     def _current_notes_text(self) -> str:
         if not hasattr(self, "tab_notes") or self.tab_notes is None:
             return ""
         return self.tab_notes.get_notes_text()
 
-
     def _has_unsaved_changes(self) -> bool:
         return self._current_notes_text() != self._notes_original
 
-
     def _on_close_clicked(self) -> None:
         self.reject()
-
-
 
     def _on_save_notes_clicked(self) -> None:
         movie_id = self._movie.get("id")
@@ -866,9 +831,6 @@ class ModernDetailDialog(QDialog):
         self._notes_original = notes
         self.accept()
 
-
-
-
     def reject(self) -> None:
         if self._has_unsaved_changes():
             reply = QMessageBox.warning(
@@ -888,26 +850,10 @@ class ModernDetailDialog(QDialog):
         super().reject()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ---------------------------------------------------------------------
 # Egységes belépési pont
 # ---------------------------------------------------------------------
+
 
 def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") -> None:
     real_parent = parent.window() if hasattr(parent, "window") else parent
@@ -934,6 +880,11 @@ def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") 
 
     dlg = ModernDetailDialog(movie_copy, parent=real_parent)
 
+    # Referencia eltárolása, hogy a main_window (on_edit_item_from_list)
+    # a hosszú reload_data() köré tudja tenni a show/hide_refresh_status()
+    # hívásokat – ott tudjuk pontosan, mikor kezdődik/ér véget az újraépítés.
+    real_parent._active_details_dialog = dlg
+
     edit_cb = getattr(real_parent, "on_edit_item_from_list", None)
     if callable(edit_cb):
 
@@ -956,10 +907,15 @@ def open_details_dialog(parent: QWidget, movie: dict, *, style: str = "modern") 
 
             dlg._movie = updated_movie_copy
             dlg._populate()
+
         dlg.edit_requested.connect(handle_edit_requested)
 
     notes_cb = getattr(real_parent, "on_save_notes_from_details", None)
     if callable(notes_cb):
         dlg.notes_save_requested.connect(notes_cb)
 
-    dlg.exec()
+    try:
+        dlg.exec()
+    finally:
+        if getattr(real_parent, "_active_details_dialog", None) is dlg:
+            real_parent._active_details_dialog = None
