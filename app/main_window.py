@@ -31,7 +31,7 @@ from db import DatabaseManager
 from dialogs.edit_dialog import EditDialog
 from dialogs.log_window import LogWindow
 from dialogs.settings_dialog import SettingsDialog
-from PySide6.QtCore import QEvent, QSettings, Qt, QTimer
+from PySide6.QtCore import QDateTime, QEvent, QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QActionGroup, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -64,38 +64,49 @@ from wizard.wizard import AddItemWizard
 # --------------------------------------------------------------------------------------------------
 
 CHRISTMAS_ALIASES = {
-    "karácsonyi", "karacsonyi", "karácsony", "karacsony", "christmas", "xmas",
+    "karácsonyi",
+    "karacsonyi",
+    "karácsony",
+    "karacsony",
+    "christmas",
+    "xmas",
 }
 
 NEWYEAR_ALIASES = {
-    "szilveszteri", "szilveszter", "newyear", "new_year", "new-year",
+    "szilveszteri",
+    "szilveszter",
+    "newyear",
+    "new_year",
+    "new-year",
 }
 
 BOTH_ALIASES = {
-    "mindkettő", "both", "karácsony+szilveszter", "mixed",
+    "mindkettő",
+    "both",
+    "karácsony+szilveszter",
+    "mixed",
 }
 
 # --------------------------------------------------------------------------------------------------
 
 
-
-
-
-
-
 LOGGER = logging.getLogger("FilmekAdatbazis")
-
-
 
 
 class MainWindow(QMainWindow):
     def __init__(self, dbm: DatabaseManager):
         super().__init__()
-        self.db = dbm          # kompatibilitásért
-        self.dbm = dbm         # új név
+        self.db = dbm  # kompatibilitásért
+        self.dbm = dbm  # új név
         self.all_rows: list[dict[str, Any]] = []
         self.grouped: dict[str, list[dict[str, Any]]] = {}
 
+        # "Piszkos" jelző: True, ha az adatbázisban történt valódi
+        # módosítás (új elem, szerkesztés, törlés, import) az utolsó
+        # reload_data() óta, tehát az Adatbázis nézetnek valóban újra
+        # kell töltenie az adatot. Kezdetben True, hogy az első
+        # megnyitáskor mindenképp betöltsön.
+        self._db_dirty = True
 
         # --- UI beállítások (hover, stb.) ---
         self.hover_effect_enabled = True  # alapértelmezés
@@ -109,16 +120,13 @@ class MainWindow(QMainWindow):
         else:
             self.current_db_view = "cards"
 
-
-
         self.view_toolbar = QToolBar("Nézet", self)
         self.view_toolbar.setMovable(False)
         self.addToolBar(Qt.TopToolBarArea, self.view_toolbar)
 
-
         # Ablak alap
         self.setWindowTitle(f"{APP_DISPLAY_NAME} {APP_VERSION}")
-        self.resize(1500, 900)   # 1.érték: X tengely, 2.érték: Y tengely
+        self.resize(1500, 900)  # 1.érték: X tengely, 2.érték: Y tengely
         self.setWindowIcon(QIcon(str(ICON_PATH)))
 
         # Menüsor
@@ -166,8 +174,6 @@ class MainWindow(QMainWindow):
         log_action.triggered.connect(self.open_log_window)
         help_menu.addAction(log_action)
 
-
-
         # Központi elrendezés: bal navigáció + jobb stack
         central = QWidget()
         self.setCentralWidget(central)
@@ -202,14 +208,11 @@ class MainWindow(QMainWindow):
         filter_row = QHBoxLayout()
         filter_label = QLabel("Keresés:")
         self.filter_edit = QLineEdit()
-        self.filter_edit.setPlaceholderText(
-            "Írj be címet, műfajt, tárolást, felbontást…"
-        )
+        self.filter_edit.setPlaceholderText("Írj be címet, műfajt, tárolást, felbontást…")
         self.filter_edit.textChanged.connect(self.apply_filter)
         filter_row.addWidget(filter_label)
         filter_row.addWidget(self.filter_edit)
         db_v.addLayout(filter_row)
-
 
         # Nézetváltó akciók (kártya / lista)
         self.act_view_cards = QAction("Kártyanézet", self)
@@ -222,12 +225,9 @@ class MainWindow(QMainWindow):
         view_group.addAction(self.act_view_cards)
         view_group.addAction(self.act_view_list)
 
-
-        self.filter_type = "all"          # "all" | "movie" | "series"
-        self.filter_quality = set()       # pl. {"4k", "1080p"} ; üres = mind
-        self.filter_seasonal = set()      # pl. {"karacsonyi", "szilveszteri"} ; üres = mind
-
-
+        self.filter_type = "all"  # "all" | "movie" | "series"
+        self.filter_quality = set()  # pl. {"4k", "1080p"} ; üres = mind
+        self.filter_seasonal = set()  # pl. {"karacsonyi", "szilveszteri"} ; üres = mind
 
         # Induláskori állapot a beállítások alapján
         if self.current_db_view == "list":
@@ -243,8 +243,6 @@ class MainWindow(QMainWindow):
         self.view_mode_button = QToolButton()
         self.view_mode_button.setText(initial_button_text)
         self.view_mode_button.setPopupMode(QToolButton.InstantPopup)
-
-
 
         # --- Típus szűrő (Filmek / Sorozatok / Mind)
         self.type_group = QActionGroup(self)
@@ -270,12 +268,7 @@ class MainWindow(QMainWindow):
         type_menu.addAction(self.act_type_all)
         self.type_filter_button.setMenu(type_menu)
 
-
-
-
-
         self.act_type_all.setChecked(True)
-
 
         # --- Minőség szűrő (multi-select) ---
         self.quality_filter_button = QToolButton()
@@ -303,10 +296,6 @@ class MainWindow(QMainWindow):
         self.act_q_720.toggled.connect(lambda on: self.toggle_quality("720p", on))
         self.act_q_sd.toggled.connect(lambda on: self.toggle_quality("sd", on))
 
-
-
-
-
         # --- Időszakos szűrő (multi-select) ---
         self.seasonal_filter_button = QToolButton()
         self.seasonal_filter_button.setText("Időszakos: Mind")
@@ -327,41 +316,9 @@ class MainWindow(QMainWindow):
         self.act_s_kar.toggled.connect(lambda on: self.toggle_seasonal("karacsonyi", on))
         self.act_s_szil.toggled.connect(lambda on: self.toggle_seasonal("szilveszteri", on))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
         self.act_type_movies.triggered.connect(lambda: self.set_type_filter("movie"))
         self.act_type_series.triggered.connect(lambda: self.set_type_filter("series"))
         self.act_type_all.triggered.connect(lambda: self.set_type_filter("all"))
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         view_menu = QMenu(self.view_mode_button)
         view_menu.addAction(self.act_view_cards)
@@ -371,7 +328,6 @@ class MainWindow(QMainWindow):
         # Kapcsolás a logikára (amikor majd megvan a listanézet stack):
         self.act_view_cards.triggered.connect(self.show_cards_view)
         self.act_view_list.triggered.connect(self.show_list_view)
-
 
         # Keresősáv alatti sor: nézetváltó + Mindent töröl (jobb oldalon)
         clear_row = QHBoxLayout()
@@ -393,35 +349,43 @@ class MainWindow(QMainWindow):
         self.clear_db_button.clicked.connect(self.on_clear_database)
         clear_row.addWidget(self.clear_db_button)
 
-
         # 3) és itt fűzöd be a fő layoutba
-       # main_layout.addLayout(clear_row)
-
-
+        # main_layout.addLayout(clear_row)
 
         clear_row.addStretch()
         clear_row.addWidget(self.type_filter_button)
         clear_row.addWidget(self.view_mode_button)
 
-
-
         # Szerkesztés gomb – mindig a DB nézet részeként
-       # self.btn_edit_item = QPushButton("Szerkesztés…")
-       # self.btn_edit_item.clicked.connect(self.on_edit_selected_item)
-       # clear_row.addWidget(self.btn_edit_item)
-
-
-
-
-
+        # self.btn_edit_item = QPushButton("Szerkesztés…")
+        # self.btn_edit_item.clicked.connect(self.on_edit_selected_item)
+        # clear_row.addWidget(self.btn_edit_item)
 
         clear_row.addWidget(self.seasonal_filter_button)
 
-
-
         db_v.addLayout(clear_row)
 
+        # --- "Vegyes találat" figyelmeztető banner ---
+        # Akkor jelenik meg, ha a keresőmezőben van szöveg, és van olyan
+        # megjelenített kártya, amelynek csak egyes példányai (pl. csak az
+        # egyik tárolási helyen lévő kópia) egyeznek a keresésre.
+        self.mixed_match_banner = QLabel(
+            "Egyes elemek több helyen vannak tárolva, ezért jelenik meg."
+        )
+        self.mixed_match_banner.setObjectName("warningBanner")
+        self.mixed_match_banner.setVisible(False)
+        db_v.addWidget(self.mixed_match_banner)
 
+        # --- "Adatbázis frissül" státusz-üzenet ---
+        # Akkor jelenik meg, amíg az Adatbázis nézet a háttérben (blokkolva)
+        # újraolvassa és felépíti a kártyákat/listát (reload_data()).
+        self.db_refresh_status = QLabel("Kis türelmet, az adatbázis betöltődik…")
+        self.db_refresh_status.setObjectName("refreshStatusBanner")
+        self.db_refresh_status.setAlignment(Qt.AlignCenter)
+        self.db_refresh_status.setVisible(False)
+        db_v.addWidget(self.db_refresh_status)
+
+        self._db_refresh_status_started_at: int | None = None
 
         # --- Kártyanézet komponensei ---
         self.cards_holder = QWidget()
@@ -444,9 +408,6 @@ class MainWindow(QMainWindow):
         self.scroll_area.setWidget(self.cards_holder)
         self.scroll_area.viewport().installEventFilter(self)
 
-
-
-
         # --- Lista nézet widget ---
         self.list_view = ListViewWidget(self.dbm, parent=self)
         # jobb klikk / menü: EditDialog
@@ -457,16 +418,10 @@ class MainWindow(QMainWindow):
         if hasattr(self.list_view, "detailsRequested"):
             self.list_view.detailsRequested.connect(self.on_show_details_from_list)
 
-
-
-
-
-
-
         # --- Belső stack: kártyanézet vs. lista nézet ---
         self.db_views_stack = QStackedWidget()
         self.db_views_stack.addWidget(self.scroll_area)  # index 0 – kártya
-        self.db_views_stack.addWidget(self.list_view)    # index 1 – lista
+        self.db_views_stack.addWidget(self.list_view)  # index 1 – lista
         self.db_views_stack.setCurrentIndex(0)
 
         db_v.addWidget(self.db_views_stack)
@@ -481,19 +436,7 @@ class MainWindow(QMainWindow):
         # Start
         self.stack.setCurrentIndex(0)
 
-
-
-
         print("TOOLBARS:", [tb.windowTitle() for tb in self.findChildren(QToolBar)])
-
-
-
-
-
-
-
-
-
 
     def load_ui_settings(self) -> None:
         settings = QSettings(APP_ORG, APP_NAME)
@@ -503,11 +446,6 @@ class MainWindow(QMainWindow):
             True,
             bool,
         )
-
-
-
-
-
 
     def _update_seasonal_button_text(self) -> None:
         if not self.filter_seasonal:
@@ -534,20 +472,13 @@ class MainWindow(QMainWindow):
         self._update_seasonal_button_text()
         self.reload_data()
 
-
-
-
-
-
-
     # --- Beállítások ablak ---
     def open_settings_dialog(self) -> None:
-        dlg = SettingsDialog(self)
+        dlg = SettingsDialog(self, default_db_path=str(DB_PATH))
         if dlg.exec() == QDialog.Accepted:
             app = QApplication.instance()
             if app is not None:
                 apply_theme_from_settings(app)
-
 
             # UI beállítások (hover) újraolvasása
             self.load_ui_settings()
@@ -568,15 +499,20 @@ class MainWindow(QMainWindow):
             else:
                 self.show_cards_view()
 
-
-
     # --- Új felvétel varázslóval / sima dialógussal ---
     def on_add_clicked(self) -> None:
         """Fájl → Új menüpont. Kapcsolótól függően wizard vagy sima dialog."""
         if USE_WIZARD_FOR_NEW:
             wiz = AddItemWizard(self.dbm, parent=self)
             if wiz.exec() == QDialog.DialogCode.Accepted:
-                QTimer.singleShot(0, self.reload_data)
+                self._db_dirty = True
+                # Ha épp az Adatbázis nézet látszik, azonnal frissítünk,
+                # hogy a felhasználó rögtön lássa az új elemet. Ha a
+                # Kezdőoldalon vagyunk, a frissítés a következő show_db()
+                # hívásra marad (lásd _db_dirty), nincs értelme most,
+                # rejtve lefuttatni a blokkoló reload_data()-t.
+                if self.stack.currentIndex() == 1:
+                    QTimer.singleShot(0, self.reload_data)
         else:
             self.new_item()
 
@@ -587,15 +523,22 @@ class MainWindow(QMainWindow):
             self.filter_edit.clear()
             self.filter_edit.blockSignals(False)
 
-        self.reload_data()
+        # Előbb váltunk a DB oldalra, hogy a frissülést jelző üzenet
+        # ténylegesen látszódjon, mielőtt a (blokkoló) reload_data() elindul.
         self.stack.setCurrentIndex(1)
 
-          # Belső nézet állapot az aktuális beállítás alapján
+        if self._db_dirty:
+            self.show_db_refresh_status()
+            self.reload_data()
+            self.hide_db_refresh_status()
+        # ha nem volt közben adatbázis-módosítás, a már felépített
+        # kártyák/lista változatlanul maradnak – nincs mit újratölteni.
+
+        # Belső nézet állapot az aktuális beállítás alapján
         if self.current_db_view == "list":
             self.show_list_view()
         else:
             self.show_cards_view()
-
 
     # --- Nézetváltás: kártya / lista ---
     def show_cards_view(self) -> None:
@@ -606,7 +549,6 @@ class MainWindow(QMainWindow):
         self.act_view_list.setChecked(False)
         self.view_mode_button.setText("Kártyanézet")
 
-
     def show_list_view(self) -> None:
         self.current_db_view = "list"
         if hasattr(self, "db_views_stack"):
@@ -614,11 +556,6 @@ class MainWindow(QMainWindow):
         self.act_view_list.setChecked(True)
         self.act_view_cards.setChecked(False)
         self.view_mode_button.setText("Lista nézet")
-
-
-
-
-
 
     def set_type_filter(self, value: str) -> None:
         self.filter_type = value
@@ -628,27 +565,12 @@ class MainWindow(QMainWindow):
             label = {"all": "Mind", "movie": "Filmek", "series": "Sorozatok"}.get(value, "Mind")
             self.type_filter_button.setText(label)
 
-
         # Mentés QSettings-be
         settings = QSettings(APP_ORG, APP_NAME)
         settings.setValue("filter/type", value)
 
-
-
         # ÚJRAÉPÍTÉS (ettől változik a GUI)
         self.reload_data()
-
-
-
-
-
-
-
-
-
-
-
-
 
     # --- Kijelölt elem szerkesztése (toolbar gomb) ---
     def on_edit_selected_item(self) -> None:
@@ -671,9 +593,6 @@ class MainWindow(QMainWindow):
 
         self.on_edit_item_from_list(item_id)
 
-
-
-
     # --- Dupla kattintás / jelzés a ListViewWidget-ből ---
     def on_edit_item_from_list(self, item_id: int) -> bool:
         LOGGER.debug("[MAIN editRequested] received id=%r", item_id)
@@ -689,12 +608,23 @@ class MainWindow(QMainWindow):
 
         dlg = EditDialog(self.dbm, row=row, parent=self)
         if dlg.exec():
+            # Ha a szerkesztés egy nyitott Részletek ablakból indult, ott
+            # jelezzük, hogy a (blokkoló) reload_data() alatt frissül az
+            # oldal – hogy a felhasználó ne lásson félig frissült állapotot.
+            details_dlg = getattr(self, "_active_details_dialog", None)
+            show_status = details_dlg is not None and hasattr(details_dlg, "show_refresh_status")
+
+            if show_status:
+                details_dlg.show_refresh_status()
+
             self.reload_data()
+
+            if show_status:
+                details_dlg.hide_refresh_status()
+
             return True
 
         return False
-
-
 
     def on_save_notes_from_details(self, item_id: int, notes: str) -> None:
         """
@@ -707,13 +637,9 @@ class MainWindow(QMainWindow):
             return
 
         # opcionális: UI frissítés
-       # self.refresh_current_view()
+        # self.refresh_current_view()
 
         self.reload_data()
-
-
-
-
 
     def on_show_details_from_list(self, item_id: int) -> None:
         """
@@ -743,18 +669,8 @@ class MainWindow(QMainWindow):
             )
 
         from dialogs.details_dialog import open_details_dialog
+
         open_details_dialog(self, row)
-
-
-
-
-
-
-
-
-
-
-
 
     def load_items_filtered(self):
         items = self.db.list_all_items()  # vagy ami nálad van
@@ -769,7 +685,6 @@ class MainWindow(QMainWindow):
 
         return items
 
-
     def _match_quality(self, row: dict[str, Any]) -> bool:
         selected = getattr(self, "filter_quality", set()) or set()
         if not selected:
@@ -777,13 +692,17 @@ class MainWindow(QMainWindow):
 
         # itt azt kell nézni, hogy nálad a DB-ben melyik mező hordozza a minőséget
         # tipikusan: row.get("format") vagy row.get("format_type") vagy row.get("resolution")
-        raw = " ".join([
-            str(row.get("format_type") or ""),
-            str(row.get("format") or ""),
-        ]).strip().lower()
+        raw = (
+            " ".join(
+                [
+                    str(row.get("format_type") or ""),
+                    str(row.get("format") or ""),
+                ]
+            )
+            .strip()
+            .lower()
+        )
         return any(q in raw for q in selected)
-
-
 
     def _match_seasonal(self, row: dict[str, Any]) -> bool:
         selected = getattr(self, "filter_seasonal", set()) or set()
@@ -793,7 +712,7 @@ class MainWindow(QMainWindow):
         # itt attól függ, hogy később:
         # - lesz külön mező (pl. row["seasonal_tag"] = "karacsonyi"),
         # - vagy most csak boolean (is_seasonal)
-        tag = (row.get("seasonal_tag") or "").strip().lower()   # jövőálló
+        tag = (row.get("seasonal_tag") or "").strip().lower()  # jövőálló
         if tag:
             return tag in selected
 
@@ -802,10 +721,6 @@ class MainWindow(QMainWindow):
         # de ez nem tudja megkülönböztetni karácsony/szilveszter között
         is_seasonal = bool(row.get("is_seasonal"))
         return is_seasonal
-
-
-
-
 
     def _match_type(self, row: dict) -> bool:
         ft = getattr(self, "filter_type", "all")
@@ -819,10 +734,7 @@ class MainWindow(QMainWindow):
         if ft == "series":
             return t in ("sorozat", "series")
 
-
         return True
-
-
 
     def _update_quality_button_text(self) -> None:
         if not self.filter_quality:
@@ -849,23 +761,6 @@ class MainWindow(QMainWindow):
         self._update_quality_button_text()
         self.reload_data()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     # --- Segéd: sor keresése ID alapján a cache-ben ---
     def _find_row_by_id(self, item_id: int) -> dict[str, Any] | None:
         for r in self.all_rows:
@@ -876,9 +771,6 @@ class MainWindow(QMainWindow):
                 continue
         return None
 
-
-
-
     # --- Csoportosítás címenként (pontos egyezés) ---
     def group_by_title(self) -> None:
         grouped: dict[str, list[dict[str, Any]]] = {}
@@ -888,12 +780,6 @@ class MainWindow(QMainWindow):
                 continue
             grouped.setdefault(title, []).append(r)
         self.grouped = grouped
-
-
-
-
-
-
 
     # --- Görgő delegálása a scrollnak ---
     def eventFilter(self, obj, event):
@@ -906,50 +792,81 @@ class MainWindow(QMainWindow):
             return True
         return super().eventFilter(obj, event)
 
-
-
-
-
-
         # --- Kereső (kártyák + lista) ---
+
     def apply_filter(self, text: str) -> None:
         t = (text or "").strip().lower()
 
         # Kártyák szűrése
+        has_mixed_match = False
         if hasattr(self, "_card_widgets"):
             if t:
-                for card, keywords in self._card_widgets:
-                    card.setVisible(t in keywords)
+                for card, keywords, per_item in self._card_widgets:
+                    is_visible = t in keywords
+                    card.setVisible(is_visible)
+
+                    # "Vegyes" kártya: látszik, de nem MINDEN példánya egyezik
+                    if is_visible:
+                        all_match = all(t in kw for kw in per_item)
+                        if not all_match:
+                            has_mixed_match = True
             else:
-                for card, _ in self._card_widgets:
+                for card, _keywords, _per_item in self._card_widgets:
                     card.setVisible(True)
+
+        self._update_mixed_match_banner(bool(t) and has_mixed_match)
 
         # Lista nézet szűrése (ha támogatja)
         if hasattr(self, "list_view") and hasattr(self.list_view, "apply_filter"):
             self.list_view.apply_filter(t)
 
+    def _update_mixed_match_banner(self, show: bool) -> None:
+        """Sárga figyelmeztető banner mutatása/elrejtése kártyanézetben."""
+        if hasattr(self, "mixed_match_banner"):
+            self.mixed_match_banner.setVisible(show)
 
+    def show_db_refresh_status(self) -> None:
+        """Azonnal megjeleníti a 'Kis türelmet, az adatbázis betöltődik…'
+        üzenetet, és rákényszeríti a kirajzolást, mielőtt a hívó folytatná
+        a (blokkoló) reload_data()-t."""
+        if not hasattr(self, "db_refresh_status"):
+            return
+        self.db_refresh_status.setVisible(True)
+        self.db_refresh_status.repaint()
+        self._db_refresh_status_started_at = QDateTime.currentMSecsSinceEpoch()
+        QApplication.processEvents()
 
+    def hide_db_refresh_status(self, minimum_visible_ms: int = 5000) -> None:
+        """Elrejti az adatbázis-frissülést jelző üzenetet.
+
+        Ha a show_db_refresh_status() óta még nem telt el
+        minimum_visible_ms (alapból 5 mp), addig kivárunk, hogy az üzenet
+        ne tűnjön el villanásszerűen egy gyors betöltésnél."""
+        if not hasattr(self, "db_refresh_status"):
+            return
+
+        started_at = getattr(self, "_db_refresh_status_started_at", None)
+        if started_at is not None:
+            elapsed = QDateTime.currentMSecsSinceEpoch() - started_at
+            remaining = minimum_visible_ms - elapsed
+            if remaining > 0:
+                QTimer.singleShot(remaining, lambda: self.db_refresh_status.setVisible(False))
+                return
+
+        self.db_refresh_status.setVisible(False)
 
     def refresh_current_view(self) -> None:
-        items = self.load_items_filtered()   # DB-ből vagy memóriából
+        items = self.load_items_filtered()  # DB-ből vagy memóriából
         if self.is_list_view_active:
             self.list_view.set_items(items)
         else:
             self.cards_view.set_items(items)
-
-
-
-
 
     def clear_cards(self) -> None:
         for i in reversed(range(self.grid.count())):
             w = self.grid.itemAt(i).widget()
             if w:
                 w.setParent(None)
-
-
-
 
     def reload_data(self) -> None:
         try:
@@ -966,13 +883,12 @@ class MainWindow(QMainWindow):
 
             # Itt jön a TÍPUS (és később a minőség) szűrés:
 
-            #filtered = [r for r in rows if self._match_type(r)]
+            # filtered = [r for r in rows if self._match_type(r)]
             filtered = [
-                r for r in rows
+                r
+                for r in rows
                 if self._match_type(r) and self._match_quality(r) and self._match_seasonal(r)
             ]
-
-
 
             # ha már van minőségi szűrőd is, ide be lehet kötni:
             # filtered = [r for r in filtered if self._match_quality(r)]
@@ -1002,13 +918,10 @@ class MainWindow(QMainWindow):
             except Exception:
                 pass
 
-
-
-
-
-
-
-
+        # A reload_data() lefutott, tehát a megjelenített adat innentől
+        # naprakész – amíg nem történik újabb módosítás, a show_db() nem
+        # kell hogy újra végigfuttassa ezt a (blokkoló) folyamatot.
+        self._db_dirty = False
 
     # Kártyák építése:
 
@@ -1022,7 +935,7 @@ class MainWindow(QMainWindow):
                 pass
 
             self.clear_cards()
-            self._card_widgets: list[tuple[QWidget, str]] = []
+            self._card_widgets: list[tuple[QWidget, str, list[str]]] = []
 
             titles = sorted(self.grouped.keys(), key=lambda s: s.lower())
             cols = 3
@@ -1032,19 +945,12 @@ class MainWindow(QMainWindow):
                 items = self.grouped[title]
 
                 # --- Kártya létrehozása ---
-                card = MovieCard(
-                    title, items, main_window=self, parent=self.cards_holder
-                )
-
+                card = MovieCard(title, items, main_window=self, parent=self.cards_holder)
 
                 # ------------ COVER DEBUG (kártyaépítés) ------------
 
                 first = items[0] if items else {}
-                cover = (
-                    first.get("cover_path")
-                    or first.get("cover_file")
-                    or first.get("cover")
-                )
+                cover = first.get("cover_path") or first.get("cover_file") or first.get("cover")
                 ui.debug(
                     "[CARD BUILD] title=%r id=%r cover=%r cover_keys=%s",
                     first.get("title"),
@@ -1054,23 +960,13 @@ class MainWindow(QMainWindow):
                 )
                 # --------------------------------------------------------------------
 
-
-
-
-
                 # Opcionális, de nem árt:
                 card.setMouseTracking(True)
 
-
                 # DEBUG
-               # print("CARD DEBUG:", card,
+                # print("CARD DEBUG:", card,
                 #      "name=", card.objectName(),
                 #      "hover=", card.property("hoverEnabled"))
-
-
-
-
-
 
                 # --- Hover stílushoz szükséges beállítások ---
                 # objektumnév a QSS-hez (#movieCard selector)
@@ -1091,18 +987,11 @@ class MainWindow(QMainWindow):
                 # --- Kereshető szöveg felépítése (régi logika + seasonal) ---
 
                 genres = " ".join({str(it.get("genre") or "") for it in items})
-                storage = " ".join(
-                    {str(it.get("storage_location") or "") for it in items}
-                )
+                storage = " ".join({str(it.get("storage_location") or "") for it in items})
                 fmt = " ".join({str(it.get("format_type") or "") for it in items})
                 aud_kw = " ".join({str(it.get("audio_tracks") or "") for it in items})
-                subs_kw = " ".join(
-                    {str(it.get("subtitle_tracks") or "") for it in items}
-                )
+                subs_kw = " ".join({str(it.get("subtitle_tracks") or "") for it in items})
                 prov_kw = " ".join({str(it.get("provider") or "") for it in items})
-
-
-
 
                 # --- ÚJ: szezonális mezők hozzáadása a kereshető szöveghez ---
                 seasonal_keywords: set[str] = set()
@@ -1125,26 +1014,37 @@ class MainWindow(QMainWindow):
                     # Nyers érték is (angol kereséshez)
                     seasonal_keywords.add(st)
 
-
-
-
-
-
                 # Tag-ek is menjenek bele (ha használsz ilyet)
                 for it in items:
                     tag = (it.get("seasonal_tag") or it.get("seasonal_type") or "").strip().lower()
                     if tag:
                         seasonal_keywords.add(tag)
 
-
                 seasonal_kw = " ".join(sorted(seasonal_keywords)).strip()
 
                 searchable = (
-                    f"{title} {genres} {storage} {fmt} "
-                    f"{aud_kw} {subs_kw} {prov_kw} {seasonal_kw}"
+                    f"{title} {genres} {storage} {fmt} {aud_kw} {subs_kw} {prov_kw} {seasonal_kw}"
                 ).lower()
 
-                self._card_widgets.append((card, searchable))
+                # --- Példányonkénti kereshető szöveg (a "vegyes találat" bannerhez) ---
+                # Minden egyes példányhoz külön keresőszöveget építünk, hogy az
+                # apply_filter meg tudja állapítani: a kártya összes példánya
+                # egyezik-e a keresésre, vagy csak egy része.
+                per_item_searchable: list[str] = []
+                for it in items:
+                    it_parts = (
+                        f"{title} "
+                        f"{it.get('genre') or ''} "
+                        f"{it.get('storage_location') or ''} "
+                        f"{it.get('format_type') or ''} "
+                        f"{it.get('format') or ''} "
+                        f"{it.get('audio_tracks') or ''} "
+                        f"{it.get('subtitle_tracks') or ''} "
+                        f"{it.get('provider') or ''}"
+                    ).lower()
+                    per_item_searchable.append(it_parts)
+
+                self._card_widgets.append((card, searchable, per_item_searchable))
                 self.grid.addWidget(card, row, col)
 
                 col += 1
@@ -1153,8 +1053,8 @@ class MainWindow(QMainWindow):
                     row += 1
 
             # ha volt szűrőszöveg, akkor azt is újra alkalmazzuk
-           # if hasattr(self, "filter_edit"):
-           #     self.apply_filter(self.filter_edit.text())
+            # if hasattr(self, "filter_edit"):
+            #     self.apply_filter(self.filter_edit.text())
 
             try:
                 self.cards_holder.adjustSize()
@@ -1172,14 +1072,13 @@ class MainWindow(QMainWindow):
 
         return count
 
-
-
-
     # --- Régi "Új" (egyszerű EditDialog) – megtartjuk, ha kellene ---
     def new_item(self) -> None:
         dlg = EditDialog(self.db, row=None, parent=self)
         if dlg.exec():
-            self.reload_data()
+            self._db_dirty = True
+            if self.stack.currentIndex() == 1:
+                self.reload_data()
 
     # --- Import/Export (Adatok menü) ---
     def export_db(self) -> None:
@@ -1195,9 +1094,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Export hiba", str(e))
 
     def import_db(self) -> None:
-        fname, _ = QFileDialog.getOpenFileName(
-            self, "Importálás", "", "SQLite (*.db)"
-        )
+        fname, _ = QFileDialog.getOpenFileName(self, "Importálás", "", "SQLite (*.db)")
         if not fname:
             return
 
@@ -1218,8 +1115,6 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Import", "Sikeres import.")
         except Exception as e:
             QMessageBox.critical(self, "Import hiba", str(e))
-
-
 
     # --- Súgó menü (Témakörök, Névjegy, Változásnapló) ---
     def show_topics(self) -> None:
@@ -1262,7 +1157,6 @@ class MainWindow(QMainWindow):
         v.addWidget(okb)
         dlg.exec()
 
-
     # Névjegy:
 
     def show_about(self) -> None:
@@ -1286,10 +1180,6 @@ class MainWindow(QMainWindow):
         v.addWidget(okb)
         dlg.exec()
 
-
-
-
-
     def show_changelog(self) -> None:
         dlg = QDialog(self)
         dlg.setWindowTitle("Verziótörténet")
@@ -1305,9 +1195,7 @@ class MainWindow(QMainWindow):
             if path.exists():
                 html = path.read_text(encoding="utf-8")
             else:
-                html = (
-                    f"<h1>Változásnapló</h1><p>Nem található: <code>{path}</code></p>"
-                )
+                html = f"<h1>Változásnapló</h1><p>Nem található: <code>{path}</code></p>"
         except Exception as e:
             html = f"<h1>Változásnapló</h1><p>Hiba: <code>{e!r}</code></p>"
 
@@ -1332,13 +1220,6 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
         super().closeEvent(e)
-
-
-
-
-
-
-
 
     def on_clear_database(self) -> None:
         """
