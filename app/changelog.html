@@ -36,6 +36,25 @@
 
 <section class="ver">
 
+    <h2>Verzió 10.1.1 — 2026-08-23</h2>
+    <ul>
+        <li><b>Új funkció:</b> állandóan látható Film / Sorozat cím-számláló az állapotsorban
+            (<code>MainWindow.update_status_bar()</code>), amely mindig a teljes, szűretlen
+            adatból számol — a típus szűrő (Filmek / Sorozatok / Mind) nem befolyásolja a
+            kiírt darabszámokat.</li>
+        <li><b>UX:</b> a "Kis türelmet, az adatbázis betöltődik…" állapotjelzés mostantól
+            közvetlenül a <code>reload_data()</code>-ban jelenik meg és tűnik el, ezért
+            szűrőváltáskor (típus, minőség, időszakos) is látszik, nemcsak az Adatbázis
+            nézet első megnyitásakor.</li>
+        <li><b>Refaktor:</b> a <code>show_db()</code>-ből eltávolítva a korábban duplikált
+            <code>show_db_refresh_status()</code> / <code>hide_db_refresh_status()</code>
+            hívás — ezt a felelősséget mostantól kizárólag a <code>reload_data()</code>
+            viseli.
+        </li>
+    </ul>
+
+
+
     <h2>Verzió 10.1.0 — 2026-08-23</h2>
     <ul>
         <li><b>Új funkció:</b> keresőmezőhöz tárolási hely (storage location) szűrés — a keresés mostantól
