@@ -436,6 +436,14 @@ class MainWindow(QMainWindow):
         # Start
         self.stack.setCurrentIndex(0)
 
+        # --- Állapotsor: állandóan látható Film / Sorozat számláló ---
+        # A statusBar() automatikusan létrehozza a sávot, ha még nem
+        # létezik. Az addPermanentWidget() jobbra igazítva, tartósan
+        # jeleníti meg a feliratot, függetlenül a showMessage()-es
+        # ideiglenes üzenetektől (pl. "Adatbázis ürítve" visszajelzés).
+        self.status_count_label = QLabel("")
+        self.statusBar().addPermanentWidget(self.status_count_label)
+
         print("TOOLBARS:", [tb.windowTitle() for tb in self.findChildren(QToolBar)])
 
     def load_ui_settings(self) -> None:
@@ -528,9 +536,9 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentIndex(1)
 
         if self._db_dirty:
-            self.show_db_refresh_status()
+            # A "Kis türelmet…" üzenetet mostantól maga a reload_data()
+            # kezeli (show/hide), így ez itt nem duplikálja azt.
             self.reload_data()
-            self.hide_db_refresh_status()
         # ha nem volt közben adatbázis-módosítás, a már felépített
         # kártyák/lista változatlanul maradnak – nincs mit újratölteni.
 
@@ -869,6 +877,12 @@ class MainWindow(QMainWindow):
                 w.setParent(None)
 
     def reload_data(self) -> None:
+        # Mindig megmutatjuk a "Kis türelmet…" üzenetet a blokkoló
+        # adatlekérdezés/kártyaépítés idejére – nemcsak a show_db()
+        # első betöltésekor, hanem szűrőváltáskor is (típus, minőség,
+        # időszakos), mert azok is ugyanezt a reload_data()-t hívják.
+        self.show_db_refresh_status()
+
         try:
             self.cards_holder.setUpdatesEnabled(False)
         except Exception:
@@ -922,6 +936,40 @@ class MainWindow(QMainWindow):
         # naprakész – amíg nem történik újabb módosítás, a show_db() nem
         # kell hogy újra végigfuttassa ezt a (blokkoló) folyamatot.
         self._db_dirty = False
+
+        # Állapotsor frissítése – mindig a teljes, szűretlen adatból
+        # számol, hogy a Film/Sorozat szűrő ne befolyásolja a kiírt
+        # darabszámokat.
+        self.update_status_bar()
+
+        self.hide_db_refresh_status()
+
+    def update_status_bar(self) -> None:
+        """
+        Állandóan látható Film / Sorozat cím-számláló az állapotsorban.
+
+        Mindig a teljes, szűretlen self._rows_cache-ből számol (nem a
+        szűrt self.grouped-ből), hogy a Film/Sorozat gyorsszűrő ne
+        befolyásolja a kiírt darabszámokat.
+
+        Egy adott cím (title) alatt több sor is lehet (pl. egy sorozat
+        évadonként külön sorral), de egy címen belül a type mező sosem
+        kevert – ezért elég az első sor type-ját megnézni csoportonként.
+        """
+        rows = getattr(self, "_rows_cache", [])
+
+        titles_by_type: dict[str, str] = {}
+        for r in rows:
+            title = (r.get("title") or "").strip()
+            if not title:
+                continue
+            if title not in titles_by_type:
+                titles_by_type[title] = (r.get("type") or "").strip().lower()
+
+        film_count = sum(1 for t in titles_by_type.values() if t == "film")
+        sorozat_count = sum(1 for t in titles_by_type.values() if t == "sorozat")
+
+        self.status_count_label.setText(f"Filmek: {film_count}    TV-Sorozat: {sorozat_count}")
 
     # Kártyák építése:
 
