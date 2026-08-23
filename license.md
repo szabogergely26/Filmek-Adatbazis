@@ -41,9 +41,7 @@ Kétség esetén: ha a tevékenység a szoftver **továbbadását** jelenti bár
 **A licenc rövid összefoglalása:**
 
 | | |
-
 |---|---|
-
 | ✅ Ingyenes használat, magán vagy céges belső célra | Igen |
 | ✅ Forráskód megtekintése, tanulmányozása | Igen |
 | ✅ Módosítás, saját célra | Igen |
