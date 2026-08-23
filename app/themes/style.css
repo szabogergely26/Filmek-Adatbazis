@@ -446,14 +446,14 @@ QFrame#movieCard QPushButton:pressed {
 
 /* ===== Movies 7.0 – List view (QTableWidget) hover + selection ===== */
 
- QTableWidget#dbListTable {
+QTableWidget#dbListTable {
     background: transparent;
     border: 1px solid #4f4545;
     gridline-color: rgba(255, 255, 255, 60);
     selection-background-color: transparent;
     /* mi színezzük az item-et */
     selection-color: rgb(255, 255, 255);
- } 
+}
 
 
 
@@ -469,4 +469,38 @@ QTableWidget#dbListTable::item:selected:hover {
     background: rgba(25, 70, 160, 210);
     border: 2px solid rgba(255, 255, 255, 85);
     border-radius: 6px;
+}
+
+
+
+
+/* ===== Oldalcímek (pl. "Kezdőoldal") ===== */
+QLabel#pageTitle {
+    font-size: 22px;
+    font-weight: bold;
+    color: #ffffff;
+    padding: 10px 0 14px 0;
+    border-bottom: 1px solid #3f3f3f;
+    margin-bottom: 10px;
+}
+
+
+
+
+/* ===== Státusz- és figyelmeztető sávok ===== */
+
+/* Semleges "folyamatban van" üzenet (pl. adatbázis/oldal frissül) */
+QLabel#refreshStatusBanner {
+    color: #9a9a9a;
+    font-style: italic;
+    padding: 6px 10px;
+}
+
+/* Figyelmeztető (sárga) banner – pl. vegyes találatú kártyák jelzése */
+QLabel#warningBanner {
+    background-color: #fff3b0;
+    color: #6b5900;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: bold;
 }
